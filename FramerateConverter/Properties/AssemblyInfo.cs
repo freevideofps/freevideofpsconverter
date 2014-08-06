@@ -1,6 +1,11 @@
-﻿using System.Reflection;
+﻿#region
+
+using System.Reflection;
+using System.Resources;
 using System.Runtime.InteropServices;
 using System.Windows;
+
+#endregion
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -54,4 +59,5 @@ using System.Windows;
 
 [assembly: AssemblyVersion("0.0.8.2")]
 [assembly: AssemblyFileVersion("0.0.8.1")]
-[assembly: GuidAttribute("E2312D35-14DC-443E-82BB-D5DBE9650EBC")]
+[assembly: Guid("E2312D35-14DC-443E-82BB-D5DBE9650EBC")]
+[assembly: NeutralResourcesLanguage("en")]

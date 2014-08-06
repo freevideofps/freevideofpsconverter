@@ -1,9 +1,12 @@
-﻿using System.Diagnostics;
-using System.IO;
+﻿#region
+
+using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
+
+#endregion
 
 namespace FreeVideoFPSConverter
 {
@@ -21,7 +24,7 @@ namespace FreeVideoFPSConverter
         {
             const string resourceName = "FreeVideoFPSConverter.Templates.GPLv2.rtf";
 
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
             {
                 if (stream != null)
                 {

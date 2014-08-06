@@ -49,8 +49,8 @@
             <StackPanel Grid.Column="0" Orientation="Vertical">
                 <Image Source="Images/logo.png" Width="200" Height="112" Margin="10,0,20,0" />
                 <Label HorizontalAlignment="Center">Video Frame Rate Converter</Label>
-                <Label HorizontalAlignment="Center" Content="{Binding VersionInfo}"/>
-             </StackPanel>
+                <Label HorizontalAlignment="Center" Content="{Binding VersionInfo}" />
+            </StackPanel>
             <Grid Grid.Column="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -67,11 +67,11 @@
 
                 <Label Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Source:</Label>
                 <TextBox x:Name="TextBoxSourceFilename" Grid.Row="0" Grid.Column="1" Width="Auto" Margin="5"
-                        VerticalAlignment="Center" HorizontalAlignment="Stretch" AllowDrop="True"
-                        ToolTip="Source File" Text="{Binding SourceFilename}"
-                        PreviewDragEnter="TextBox_PreviewDragEnter"
-                        PreviewDragOver="TextBox_PreviewDragEnter"
-                        PreviewDrop="TextBox_PreviewDropSourceFilename"/>
+                         VerticalAlignment="Center" HorizontalAlignment="Stretch" AllowDrop="True"
+                         ToolTip="Source File" Text="{Binding SourceFilename}"
+                         PreviewDragEnter="TextBox_PreviewDragEnter"
+                         PreviewDragOver="TextBox_PreviewDragEnter"
+                         PreviewDrop="TextBox_PreviewDropSourceFilename" />
                 <Button x:Name="ButtonBrowseSource" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center"
                         ToolTip="Browse Source..." Click="ButtonBrowseSource_Click">
                     <Image Source="Images/diskette_32.png" Width="16" Height="16" />
@@ -79,11 +79,11 @@
 
                 <Label Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">Target:</Label>
                 <TextBox x:Name="TextBoxTargetFilename" Grid.Row="1" Grid.Column="1" Width="Auto" Margin="5"
-                        VerticalAlignment="Center"
-                        ToolTip="Target File" Text="{Binding TargetFilename}" 
-                        PreviewDragEnter="TextBox_PreviewDragEnter"
-                        PreviewDragOver="TextBox_PreviewDragEnter"
-                        PreviewDrop="TextBox_PreviewDropTargetFilename"/>
+                         VerticalAlignment="Center"
+                         ToolTip="Target File" Text="{Binding TargetFilename}"
+                         PreviewDragEnter="TextBox_PreviewDragEnter"
+                         PreviewDragOver="TextBox_PreviewDragEnter"
+                         PreviewDrop="TextBox_PreviewDropTargetFilename" />
                 <Button x:Name="ButtonBrowseTarget" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center"
                         ToolTip="Browse Target..." Click="ButtonBrowseTarget_Click">
                     <Image Source="Images/diskette_32.png" Width="16" Height="16" />
