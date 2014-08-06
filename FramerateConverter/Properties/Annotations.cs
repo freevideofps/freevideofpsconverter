@@ -1,4 +1,8 @@
-﻿using System;
+﻿#region
+
+using System;
+
+#endregion
 
 #pragma warning disable 1591
 // ReSharper disable UnusedMember.Global
