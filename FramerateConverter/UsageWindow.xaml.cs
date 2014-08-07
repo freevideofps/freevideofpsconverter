@@ -1,6 +1,7 @@
 ﻿#region
 
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Documents;
@@ -24,7 +25,7 @@ namespace FreeVideoFPSConverter
         {
             const string resourceName = "FreeVideoFPSConverter.Templates.Usage.rtf";
 
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
             {
                 if (stream != null)
                 {
@@ -50,7 +51,7 @@ namespace FreeVideoFPSConverter
         /// <param name="e">The <see cref="MouseButtonEventArgs" /> instance containing the event data.</param>
         private void HandleClickOnHyperlink(object sender, MouseButtonEventArgs e)
         {
-            var hyperlink = sender as Hyperlink;
+            Hyperlink hyperlink = sender as Hyperlink;
 
             if (hyperlink != null)
             {
