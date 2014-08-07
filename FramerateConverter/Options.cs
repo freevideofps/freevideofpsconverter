@@ -32,7 +32,13 @@ namespace FramerateConverter
         public bool KeyFramesOnly { get; set; }
 
         [Option('f', "frames-per-second", Required = false, HelpText = "The target FPS.")]
-        public int? FramesPerSecond { get; set; }
+        public double? FramesPerSecond { get; set; }
+
+        [Option('n', "no-flicker", Required = false, HelpText = "Reduce flicker by adjusting frame rate.")]
+        public bool NoFlicker { get; set; }
+
+        [Option('m', "min-frame-rate", Required = false, HelpText = "The suuplied frame rate is a minimum.")]
+        public bool MinFrameRate { get; set; }
 
         [Option('o', "overwrite", Required = false, HelpText = "If output video exists, it will be overwritten.")]
         public bool Overwrite { get; set; }
