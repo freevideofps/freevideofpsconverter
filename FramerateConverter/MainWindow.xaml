@@ -2,7 +2,6 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         Title="Video Frame Rate Converter" MinWidth="800" MinHeight="500" Width="800" Height="500"
         Icon="Images/app.ico"
         Background="#3E3E3E"
@@ -35,145 +34,124 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Margin="10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0" Orientation="Vertical">
-                <Image Source="Images/logo.png" Width="100" Height="56" Margin="10,0,20,0" />
-                <Label HorizontalAlignment="Center">Video Frame Rate Converter</Label>
-                <Label HorizontalAlignment="Center" Content="{Binding VersionInfo}" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="4">
+            <Image Source="Images/logo.png" Width="100" Height="56" Margin="10,0,20,0" />
+            <Label HorizontalAlignment="Center">Video Frame Rate Converter</Label>
+            <Label HorizontalAlignment="Center" Content="{Binding VersionInfo}" />
+        </StackPanel>
+        <Button Grid.Row="4" Grid.Column="0" x:Name="ButtonAbout" ToolTip="About Converter..."
+                VerticalAlignment="Center"
+                HorizontalAlignment="Left" Margin="0,10" Width="80" Click="ButtonAbout_Click">
+            <StackPanel Orientation="Horizontal">
+                <Label Margin="0,0,5,0" Foreground="Blue">About</Label>
+                <Image Source="Images/about_32.png" Width="16" Height="16" />
             </StackPanel>
-            <Grid Grid.Column="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <Label Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Source:</Label>
-                <TextBox x:Name="TextBoxSourceFilename" Grid.Row="0" Grid.Column="1" Width="Auto" Margin="5"
-                         VerticalAlignment="Center" HorizontalAlignment="Stretch" AllowDrop="True"
-                         ToolTip="Source File" Text="{Binding SourceFilename}"
-                         PreviewDragEnter="TextBox_PreviewDragEnter"
-                         PreviewDragOver="TextBox_PreviewDragEnter"
-                         PreviewDrop="TextBox_PreviewDropSourceFilename" />
-                <Button x:Name="ButtonBrowseSource" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center"
-                        ToolTip="Browse Source..." Click="ButtonBrowseSource_Click">
-                    <Image Source="Images/diskette_32.png" Width="16" Height="16" />
-                </Button>
-
-                <Label Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">Target:</Label>
-                <TextBox x:Name="TextBoxTargetFilename" Grid.Row="1" Grid.Column="1" Width="Auto" Margin="5"
-                         VerticalAlignment="Center"
-                         ToolTip="Target File" Text="{Binding TargetFilename}"
-                         PreviewDragEnter="TextBox_PreviewDragEnter"
-                         PreviewDragOver="TextBox_PreviewDragEnter"
-                         PreviewDrop="TextBox_PreviewDropTargetFilename" />
-                <Button x:Name="ButtonBrowseTarget" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center"
-                        ToolTip="Browse Target..." Click="ButtonBrowseTarget_Click">
-                    <Image Source="Images/diskette_32.png" Width="16" Height="16" />
-                </Button>
-
-                <Grid Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3">
-
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Label Grid.Row="0" Grid.Column="1" VerticalAlignment="Center"
-                           Content="{Binding OriginalFramerateText}" />
-                    <xctk:DoubleUpDown x:Name="SpinnerFrameRate" Grid.Row="0" Grid.Column="2"
-                                       VerticalAlignment="Center" Width="70" Margin="5" HorizontalAlignment="Left"
-                                       Watermark="fps" Minimum="10" Maximum="200" 
-                                       Foreground="Black" Background="#B4B4B4"
-                                       Value="{Binding TargetFramerate, UpdateSourceTrigger=PropertyChanged}" />
-                    <Label Grid.Row="0" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Left">FPS</Label>
-                </Grid>
-
-                <GroupBox Grid.Row="0" Grid.Column="3" Grid.RowSpan="3" Margin="10,0,0,0"
-                          Header="Options">
-                    <StackPanel Orientation="Vertical">
-                        <CheckBox x:Name="CheckBoxKeyFrames" Content="Key Frames only"
-                                  HorizontalAlignment="Left" Margin="0,10,2,0"
-                                  VerticalAlignment="Center" IsChecked="{Binding KeyFramesOnly}" />
-                        <CheckBox x:Name="CheckBoxNoFLicker" Content="Adjust Frame Rate to reduce flicker"
-                                  HorizontalAlignment="Left" Margin="0,2"
-                                  VerticalAlignment="Center" IsChecked="{Binding NoFlickerMode}" />
-                        <CheckBox x:Name="CheckBoxMininum" Content="Do not reduce frame rate."
-                                  HorizontalAlignment="Left" Margin="0,2"
-                                  VerticalAlignment="Center" IsChecked="{Binding NoFpsReduce}" />
-                        <CheckBox x:Name="CheckBoxDebug" Content="Debug Mode"
-                                  HorizontalAlignment="Left" Margin="0,10,0,0"
-                                  VerticalAlignment="Center" IsChecked="{Binding DebugMode}" />
-                    </StackPanel>
-                </GroupBox>
-
-            </Grid>
-        </Grid>
-
-        <Grid Grid.Row="1" Grid.Column="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
-                <Button x:Name="ButtonAbout" ToolTip="About Converter..." VerticalAlignment="Center"
-                        HorizontalAlignment="Left" Margin="0" Width="80" Click="ButtonAbout_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <Label Margin="0,0,5,0" Foreground="Blue">About</Label>
-                        <Image Source="Images/about_32.png" Width="16" Height="16" />
-                    </StackPanel>
-                </Button>
-                <Button x:Name="ButtonUsage" ToolTip="Command Line Parameters..." VerticalAlignment="Center"
-                        HorizontalAlignment="Left" Margin="10,0,0,0" Width="80" Click="ButtonUsage_OnClick">
-                    <StackPanel Orientation="Horizontal">
-                        <Label Margin="0,0,5,0" Foreground="Blue">Usage</Label>
-                        <Image Source="Images/usage_32.png" Width="16" Height="16" />
-                    </StackPanel>
-                </Button>
+        </Button>
+        <Button Grid.Row="4" Grid.Column="1" x:Name="ButtonUsage" ToolTip="Command Line Parameters..."
+                VerticalAlignment="Center"
+                HorizontalAlignment="Left" Margin="10,0,0,0" Width="80" Click="ButtonUsage_OnClick">
+            <StackPanel Orientation="Horizontal">
+                <Label Margin="0,0,5,0" Foreground="Blue">Usage</Label>
+                <Image Source="Images/usage_32.png" Width="16" Height="16" />
             </StackPanel>
-
-            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button HorizontalAlignment="Right"
-                        x:Name="ButtonConvert" ToolTip="Convert" VerticalAlignment="Center" Margin="0"
-                        Width="80" Click="ButtonConvert_Click" IsDefault="True">
-                    <StackPanel Orientation="Horizontal">
-                        <Label Foreground="Blue">Convert</Label>
-                        <Image Source="Images/play_32.png" Width="16" Height="16" />
-                    </StackPanel>
-                </Button>
-                <Button HorizontalAlignment="Right"
-                        x:Name="ButtonCancel" ToolTip="Cancel" VerticalAlignment="Center"
-                        Margin="10,0,0,0" Width="80" Click="ButtonCancel_Click" IsCancel="True">
-                    <StackPanel Orientation="Horizontal">
-                        <Label Foreground="Blue">Cancel</Label>
-                        <Image Source="Images/stop_32.png" Width="16" Height="16" />
-                    </StackPanel>
-                </Button>
+        </Button>
+        <Label Grid.Row="0" Grid.Column="2" HorizontalAlignment="Right"
+               VerticalAlignment="Center">
+            Source:
+        </Label>
+        <TextBox Grid.Row="0" Grid.Column="3" x:Name="TextBoxSourceFilename" Width="Auto" Margin="5"
+                 VerticalAlignment="Center" HorizontalAlignment="Stretch" AllowDrop="True"
+                 ToolTip="Source File" Text="{Binding SourceFilename}"
+                 PreviewDragEnter="TextBox_PreviewDragEnter"
+                 PreviewDragOver="TextBox_PreviewDragEnter"
+                 PreviewDrop="TextBox_PreviewDropSourceFilename" />
+        <Button Grid.Row="0" Grid.Column="4" x:Name="ButtonBrowseSource" VerticalAlignment="Center" Margin="5,0"
+                ToolTip="Browse Source..." Click="ButtonBrowseSource_Click">
+            <Image Source="Images/diskette_32.png" Width="16" Height="16" />
+        </Button>
+        <Label Grid.Row="1" Grid.Column="2" HorizontalAlignment="Right"
+               VerticalAlignment="Center">
+            Target:
+        </Label>
+        <TextBox Grid.Row="1" Grid.Column="3" x:Name="TextBoxTargetFilename" Width="Auto" Margin="5"
+                 VerticalAlignment="Center"
+                 ToolTip="Target File" Text="{Binding TargetFilename}"
+                 PreviewDragEnter="TextBox_PreviewDragEnter"
+                 PreviewDragOver="TextBox_PreviewDragEnter"
+                 PreviewDrop="TextBox_PreviewDropTargetFilename" />
+        <Button Grid.Row="1" Grid.Column="4" x:Name="ButtonBrowseTarget" VerticalAlignment="Center" Margin="5,0"
+                ToolTip="Browse Target..." Click="ButtonBrowseTarget_Click">
+            <Image Source="Images/diskette_32.png" Width="16" Height="16" />
+        </Button>
+        <Label Grid.Row="3" Grid.Column="2" HorizontalAlignment="Right"
+               VerticalAlignment="Center">
+            FPS:
+        </Label>
+        <xctk:DoubleUpDown Grid.Row="3" Grid.Column="3" x:Name="SpinnerFrameRate"
+                           VerticalAlignment="Center" Width="70" Margin="5" HorizontalAlignment="Left"
+                           Watermark="fps" Minimum="10" Maximum="200"
+                           Foreground="Black" Background="#B4B4B4"
+                           Value="{Binding TargetFramerate, UpdateSourceTrigger=PropertyChanged}" />
+        <GroupBox Grid.Row="0" Grid.Column="5" Grid.ColumnSpan="2" Grid.RowSpan="4" Margin="0"
+                  Header="Options">
+            <StackPanel Orientation="Vertical">
+                <CheckBox x:Name="CheckBoxKeyFrames" Content="Key Frames only"
+                          HorizontalAlignment="Left" Margin="0,10,2,0"
+                          VerticalAlignment="Center" IsChecked="{Binding KeyFramesOnly}" />
+                <CheckBox x:Name="CheckBoxNoFLicker" Content="Adjust Frame Rate to reduce flicker"
+                          HorizontalAlignment="Left" Margin="0,2"
+                          VerticalAlignment="Center" IsChecked="{Binding NoFlickerMode}" />
+                <CheckBox x:Name="CheckBoxMininum" Content="Do not reduce frame rate."
+                          HorizontalAlignment="Left" Margin="0,2"
+                          VerticalAlignment="Center" IsChecked="{Binding NoFpsReduce}" />
+                <CheckBox x:Name="CheckBoxDebug" Content="Debug Mode"
+                          HorizontalAlignment="Left" Margin="0,10,0,0"
+                          VerticalAlignment="Center" IsChecked="{Binding DebugMode}" />
             </StackPanel>
-        </Grid>
-
-        <ProgressBar x:Name="ProgressBarConversion" Grid.Row="2" Grid.Column="0" Width="Auto" Height="16"
+        </GroupBox>
+        <Button Grid.Row="4" Grid.Column="5"
+                HorizontalAlignment="Left"
+                x:Name="ButtonConvert" ToolTip="Convert" VerticalAlignment="Center" Margin="0"
+                Width="80" Click="ButtonConvert_Click" IsDefault="True">
+            <StackPanel Orientation="Horizontal">
+                <Label Foreground="Blue">Convert</Label>
+                <Image Source="Images/play_32.png" Width="16" Height="16" />
+            </StackPanel>
+        </Button>
+        <Button Grid.Row="4" Grid.Column="6"
+                HorizontalAlignment="Right"
+                x:Name="ButtonCancel" ToolTip="Cancel" VerticalAlignment="Center"
+                Margin="10,0,0,0" Width="80" Click="ButtonCancel_Click" IsCancel="True">
+            <StackPanel Orientation="Horizontal">
+                <Label Foreground="Blue">Cancel</Label>
+                <Image Source="Images/stop_32.png" Width="16" Height="16" />
+            </StackPanel>
+        </Button>
+        <!-- progress bar-->
+        <ProgressBar Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="7"
+                     x:Name="ProgressBarConversion" Width="Auto" Height="16"
                      VerticalAlignment="Center" ToolTip="Conversion Progress" BorderThickness="0" Margin="0,10"
                      Foreground="#FCE299" />
-        <TextBlock Grid.Row="2" Grid.Column="0" Width="Auto"
+        <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="7" Width="Auto"
                    Text="{Binding ElementName=ProgressBarConversion, Path=Value, StringFormat={}{0:F2}%}"
                    HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Blue" />
-        <ListBox x:Name="ListBoxReport" Grid.Row="3" Height="Auto" Width="Auto" MinHeight="200" SelectionMode="Single"
+        <!-- list box-->
+        <ListBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="7" x:Name="ListBoxReport" Height="Auto" Width="Auto"
+                 MinHeight="200" SelectionMode="Single"
                  VirtualizingStackPanel.IsVirtualizing="True" />
     </Grid>
 </Window>
