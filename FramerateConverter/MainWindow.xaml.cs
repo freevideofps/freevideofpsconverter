@@ -1059,9 +1059,9 @@ namespace FreeVideoFPSConverter
                         new XElement("OutputFilename", TargetFilename),
                         new XElement("Width", OriginalWidth),
                         new XElement("Height", OriginalHeight),
-                        new XElement("OriginalFramerateText", OriginalFramerate.ToString("N3", CultureInfo.InvariantCulture)),
-                        new XElement("Framerate", TargetFramerate.ToString("N3", CultureInfo.InvariantCulture)),
-                        new XElement("Duration", OriginalDuration.ToString("N3", CultureInfo.InvariantCulture))));
+                        new XElement("OriginalFramerateText", OriginalFramerate.ToString("N8", CultureInfo.InvariantCulture)),
+                        new XElement("Framerate", TargetFramerate.ToString("N8", CultureInfo.InvariantCulture)),
+                        new XElement("Duration", OriginalDuration.ToString("N8", CultureInfo.InvariantCulture))));
 
                 doc.Save(xmlTargetFilename);
 
