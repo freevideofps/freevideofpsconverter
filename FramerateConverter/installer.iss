@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Free Video FPS Converter"
-#define MyAppVersion "0.0.8.1"
+#define MyAppVersion "0.0.9.2"
 #define MyAppPublisher "FreeVideoFPSConverter@gmail.com"
 #define MyAppExeName "FreeVideoFPSConverter.exe"
 
