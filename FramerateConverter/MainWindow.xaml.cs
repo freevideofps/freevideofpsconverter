@@ -89,26 +89,26 @@ namespace FreeVideoFPSConverter
         /// <summary>
         ///     The FFmpeg converter parameters for IVF (only Key Frames)
         /// </summary>
-        //private const string ExecutableFFmpegParametersOnlyKeyFramesIvf = @" -y -i ""{0}"" -c:v libvpx -b:v {2} -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
-        private const string ExecutableFFmpegParametersOnlyKeyFramesIvf = @" -y -i ""{0}"" -c:v libvpx -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
+        private const string ExecutableFFmpegParametersOnlyKeyFramesIvf = @" -y -i ""{0}"" -c:v libvpx -b:v {2} -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
+        //private const string ExecutableFFmpegParametersOnlyKeyFramesIvf = @" -y -i ""{0}"" -c:v libvpx -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
 
         /// <summary>
         ///     The FFmpeg converter parameters for IVF
         /// </summary>
-        //private const string ExecutableFFmpegParametersStandardIvf = @" -y -i ""{0}"" -c:v libvpx -b:v {2} ""{1}""";
-        private const string ExecutableFFmpegParametersStandardIvf = @" -y -i ""{0}"" -c:v libvpx ""{1}""";
+        private const string ExecutableFFmpegParametersStandardIvf = @" -y -i ""{0}"" -c:v libvpx -b:v {2} ""{1}""";
+        //private const string ExecutableFFmpegParametersStandardIvf = @" -y -i ""{0}"" -c:v libvpx ""{1}""";
 
         /// <summary>
         ///     The FFmpeg converter parameters for H.264 (only Key Frames)
         /// </summary>
-        //private const string ExecutableFFmpegParametersOnlyKeyFramesH264 = @" -y -i ""{0}"" -c:v libx264 -b:v {2} -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
-        private const string ExecutableFFmpegParametersOnlyKeyFramesH264 = @" -y -i ""{0}"" -c:v libx264 -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
+        private const string ExecutableFFmpegParametersOnlyKeyFramesH264 = @" -y -i ""{0}"" -c:v libx264 -b:v {2} -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
+        //private const string ExecutableFFmpegParametersOnlyKeyFramesH264 = @" -y -i ""{0}"" -c:v libx264 -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
 
         /// <summary>
         ///     The FFmpeg converter parameters for H.264
         /// </summary>
-        //private const string ExecutableFFmpegParametersStandardH264 = @" -y -i ""{0}"" -c:v libx264 -b:v {2} ""{1}""";
-        private const string ExecutableFFmpegParametersStandardH264 = @" -y -i ""{0}"" -c:v libx264 ""{1}""";
+        private const string ExecutableFFmpegParametersStandardH264 = @" -y -i ""{0}"" -c:v libx264 -b:v {2} ""{1}""";
+        //private const string ExecutableFFmpegParametersStandardH264 = @" -y -i ""{0}"" -c:v libx264 ""{1}""";
 
         /// <summary>
         ///     The FFmpeg converter parameters to extract an audio stream
@@ -123,7 +123,7 @@ namespace FreeVideoFPSConverter
         /// <summary>
         ///     The media filter
         /// </summary>
-        private const string MediaFilter = @"Video Files|*.mpg;*.avi;*.wmv;*.mov;*.mp4;*.h264;*.mkv|All Files|*.*";
+        private const string MediaFilter = @"Video Files|*.mpg;*.avi;*.wmv;*.mov;*.mp4;*.h264;*.mkv;*.ivf;*.webm|All Files|*.*";
 
         // Using a DependencyProperty as the backing store for KeyFramesOnly.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty KeyFramesOnlyProperty =
@@ -224,8 +224,8 @@ namespace FreeVideoFPSConverter
             OriginalFramerateText = "From \"Unknown\" to ";
 
 #if DEBUG
-            SourceFilename = @"C:\dev\FpsConversion\Wildlife.wmv";
-            TargetFilename = @"C:\dev\FpsConversion\output.mp4";
+            SourceFilename = @"C:\tmp\input.mp4";
+            TargetFilename = @"C:\tmp\output.ivf";
 #else
             SourceFilename = string.Empty;
             TargetFilename = string.Empty;
@@ -981,7 +981,7 @@ namespace FreeVideoFPSConverter
                 string ffmpegCommand = "\"" + Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ExecutableFFmpeg) + "\"";
                 string extension = Path.GetExtension(TargetFilename) ?? ".h264";
                 string targetExtension = extension.ToLower();
-                //string bitrateInKBits = CalculateBitRate(OriginalWidth, OriginalHeight, TargetFramerate) + "K";
+                string bitrateInKBits = CalculateBitRate(OriginalWidth, OriginalHeight, TargetFramerate) + "K";
                 string ffmpegParametersString;
                 bool patchRequired = false;
 
@@ -1023,7 +1023,7 @@ namespace FreeVideoFPSConverter
                 }
 
                 // convert the video
-                ffmpegParameters = string.Format(ffmpegParametersString, _tempAvsFile, string.IsNullOrEmpty(_tempVideoFile) ? TargetFilename : _tempVideoFile);
+                ffmpegParameters = string.Format(ffmpegParametersString, _tempAvsFile, string.IsNullOrEmpty(_tempVideoFile) ? TargetFilename : _tempVideoFile, bitrateInKBits);
                 AddToLog("--- CONVERTING VIDEO --------------------------------------------------");
                 AddToLog("Command:   " + ffmpegCommand);
                 AddToLog("Parameters:" + ffmpegParameters);
@@ -1590,30 +1590,30 @@ namespace FreeVideoFPSConverter
             e.Handled = true;
         }
 
-        ///// <summary>
-        ///// Calculates the bit rate:
-        ///// Kush Gauge bitrate calculation
-        ///// motion factor can be 1 (low), 2 (medium) or 4 (high motion)
-        ///// frame width * frame height * frame rate * motion factor * 0.07 /1000 = Kbps
-        ///// </summary>
-        ///// <param name="width">The width.</param>
-        ///// <param name="height">The height.</param>
-        ///// <param name="framerate">The framerate.</param>
-        ///// <returns>Bitrate in KBits (int)</returns>
-        //private static int CalculateBitRate(int width, int height, double framerate)
-        //{
+        /// <summary>
+        /// Calculates the bit rate:
+        /// Kush Gauge bitrate calculation
+        /// motion factor can be 1 (low), 2 (medium) or 4 (high motion)
+        /// frame width * frame height * frame rate * motion factor * 0.07 /1000 = Kbps
+        /// </summary>
+        /// <param name="width">The width.</param>
+        /// <param name="height">The height.</param>
+        /// <param name="framerate">The framerate.</param>
+        /// <returns>Bitrate in KBits (int)</returns>
+        private static int CalculateBitRate(int width, int height, double framerate)
+        {
 
-        //    int iMotionFactor = 2;
-        //    if (width < 320 || height < 240)
-        //    {
-        //        iMotionFactor = 4;
-        //    }
+            int iMotionFactor = 2;
+            if (width < 320 || height < 240)
+            {
+                iMotionFactor = 4;
+            }
 
-        //    double dbBitRate = width * height * framerate * 0.07 * iMotionFactor;
-        //    dbBitRate /= 1000;  // convert the target bit rate to kilobits per second
+            double dbBitRate = width * height * framerate * 0.07 * iMotionFactor;
+            dbBitRate /= 1000;  // convert the target bit rate to kilobits per second
 
-        //    return 500 * (int)((dbBitRate + 499) / 500);
-        //}
+            return 500 * (int)((dbBitRate + 499) / 500);
+        }
 
         /// <summary>
         /// Patches the frame count in ivf file.
