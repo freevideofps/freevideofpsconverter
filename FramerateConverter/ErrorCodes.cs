@@ -8,7 +8,7 @@
 //7     initial license was not accepted
 //100 	unknown error
 
-namespace FramerateConverter
+namespace FreeVideoFPSConverter
 {
     public enum ErrorCodes
     {

@@ -4,7 +4,7 @@ using System.Windows;
 
 #endregion
 
-namespace FramerateConverter
+namespace FreeVideoFPSConverter
 {
     /// <summary>
     ///     Interaction logic for App.xaml
