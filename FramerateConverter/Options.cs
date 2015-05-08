@@ -14,8 +14,9 @@ using CommandLine;
 //-o, --overwrite				ask
 //-v, --version					--
 //-h, --help					--
+//-a, --audio                   --
 
-namespace FramerateConverter
+namespace FreeVideoFPSConverter
 {
     public class Options
     {
@@ -42,5 +43,8 @@ namespace FramerateConverter
 
         [Option('o', "overwrite", Required = false, HelpText = "If output video exists, it will be overwritten.")]
         public bool Overwrite { get; set; }
+
+        [Option('a', "audio", Required = false, HelpText = "Keep audio stream(s) if any.")]
+        public bool KeepAudio { get; set; }
     }
 }

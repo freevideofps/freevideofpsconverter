@@ -110,14 +110,17 @@
                   Header="Options">
             <StackPanel Orientation="Vertical">
                 <CheckBox x:Name="CheckBoxKeyFrames" Content="Key Frames only"
-                          HorizontalAlignment="Left" Margin="0,10,2,0"
+                          HorizontalAlignment="Left" Margin="0,2"
                           VerticalAlignment="Center" IsChecked="{Binding KeyFramesOnly}" />
                 <CheckBox x:Name="CheckBoxNoFLicker" Content="Adjust Frame Rate to reduce flicker"
                           HorizontalAlignment="Left" Margin="0,2"
                           VerticalAlignment="Center" IsChecked="{Binding NoFlickerMode}" />
-                <CheckBox x:Name="CheckBoxMininum" Content="Do not reduce frame rate."
+                <CheckBox x:Name="CheckBoxMinimum" Content="Do not reduce frame rate"
                           HorizontalAlignment="Left" Margin="0,2"
                           VerticalAlignment="Center" IsChecked="{Binding NoFpsReduce}" />
+                <CheckBox x:Name="CheckKeepAudio" Content="Keep audio stream(s)"
+                          HorizontalAlignment="Left" Margin="0,2"
+                          VerticalAlignment="Center" IsChecked="{Binding KeepAudio}" />
                 <CheckBox x:Name="CheckBoxDebug" Content="Debug Mode"
                           HorizontalAlignment="Left" Margin="0,10,0,0"
                           VerticalAlignment="Center" IsChecked="{Binding DebugMode}" />
