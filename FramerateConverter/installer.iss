@@ -2,7 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Free Video FPS Converter"
-#define MyAppVersion "0.0.9.3"
+#define MyAppVersion "0.0.9.4"
+#define MyAppVersionDword "$00000904"
 #define MyAppPublisher "FreeVideoFPSConverter@gmail.com"
 #define MyAppExeName "FreeVideoFPSConverter.exe"
 
@@ -49,6 +50,7 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 
 [Registry]
 Root: "HKCU"; Subkey: "Software\FreeVideoFPSConverter"; ValueType: string; ValueName: "InstallationPath"; ValueData: "{app}\{#MyAppExeName}"; Flags: uninsdeletekey
+Root: "HKCU"; Subkey: "Software\FreeVideoFPSConverter"; ValueType: dword; ValueName: "InstalledVersion"; ValueData: "{#MyAppVersionDword}"; Flags: uninsdeletekey
 
 [Dirs]
 Name: "{app}\Licenses"

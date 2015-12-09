@@ -89,25 +89,37 @@ namespace FreeVideoFPSConverter
         /// <summary>
         ///     The FFmpeg converter parameters for IVF (only Key Frames)
         /// </summary>
-        private const string ExecutableFFmpegParametersOnlyKeyFramesIvf = @" -y -i ""{0}"" -c:v libvpx -b:v {2} -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
+        private const string ExecutableFFmpegParametersOnlyKeyFramesIvf = @" -y -i ""{0}"" -c:v libvpx -b:v {2}K -g 1 -keyint_min 0 -sc_threshold 1 ""{1}""";
         //private const string ExecutableFFmpegParametersOnlyKeyFramesIvf = @" -y -i ""{0}"" -c:v libvpx -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
 
         /// <summary>
         ///     The FFmpeg converter parameters for IVF
         /// </summary>
-        private const string ExecutableFFmpegParametersStandardIvf = @" -y -i ""{0}"" -c:v libvpx -b:v {2} ""{1}""";
+        private const string ExecutableFFmpegParametersStandardIvf = @" -y -i ""{0}"" -c:v libvpx -b:v {2}K ""{1}""";
         //private const string ExecutableFFmpegParametersStandardIvf = @" -y -i ""{0}"" -c:v libvpx ""{1}""";
 
         /// <summary>
         ///     The FFmpeg converter parameters for H.264 (only Key Frames)
         /// </summary>
-        private const string ExecutableFFmpegParametersOnlyKeyFramesH264 = @" -y -i ""{0}"" -c:v libx264 -b:v {2} -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
+        private const string ExecutableFFmpegParametersOnlyKeyFramesH264 = @" -y -i ""{0}"" -tune zerolatency -x264opts bitrate={2}:vbv-maxrate={2}:vbv-bufsize=1000:slices=1:ref=1:no-scenecut:nal-hrd=cbr -g 1 -keyint_min 0 -c:v libx264 ""{1}""";
+        //private const string ExecutableFFmpegParametersOnlyKeyFramesH264 = @" -y -i ""{0}"" -c:v libx264 -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
+
+        /// <summary>
+        ///     The FFmpeg converter parameters for H.264 (only Key Frames with forced size)
+        /// </summary>
+        private const string ExecutableFFmpegParametersOnlyKeyFramesH264WithForcedSize = @" -y -i ""{0}"" -filter_complex ""nullsrc=size={3}x{4},lutrgb=0:0:0,fps=fps={5} [base]; [0:v] setpts=PTS-STARTPTS,scale=w='min({3}\,iw):h=min({4}\,ih):force_original_aspect_ratio=decrease' [upperleft]; [base][upperleft] overlay=shortest=1"" -tune zerolatency -x264opts bitrate={2}:vbv-maxrate={2}:vbv-bufsize=1000:slices=1:ref=1:no-scenecut:nal-hrd=cbr -g 1 -keyint_min 0 -c:v libx264 ""{1}""";
         //private const string ExecutableFFmpegParametersOnlyKeyFramesH264 = @" -y -i ""{0}"" -c:v libx264 -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
 
         /// <summary>
         ///     The FFmpeg converter parameters for H.264
         /// </summary>
-        private const string ExecutableFFmpegParametersStandardH264 = @" -y -i ""{0}"" -c:v libx264 -b:v {2} ""{1}""";
+        private const string ExecutableFFmpegParametersStandardH264 = @" -y -i ""{0}"" -c:v libx264 -b:v {2}K ""{1}""";
+        //private const string ExecutableFFmpegParametersStandardH264 = @" -y -i ""{0}"" -c:v libx264 ""{1}""";
+
+        /// <summary>
+        ///     The FFmpeg converter parameters for H.264 (with forced size)
+        /// </summary>
+        private const string ExecutableFFmpegParametersStandardH264WithForcedSize = @" -y -i ""{0}"" -filter_complex ""nullsrc=size={3}x{4},lutrgb=0:0:0,fps=fps={5} [base]; [0:v] setpts=PTS-STARTPTS,scale=w='min({3}\,iw):h=min({4}\,ih):force_original_aspect_ratio=decrease' [upperleft]; [base][upperleft] overlay=shortest=1"" -c:v libx264 -b:v {2}K ""{1}""";
         //private const string ExecutableFFmpegParametersStandardH264 = @" -y -i ""{0}"" -c:v libx264 ""{1}""";
 
         /// <summary>
@@ -167,7 +179,21 @@ namespace FreeVideoFPSConverter
         ///     The original framerate property
         /// </summary>
         public static readonly DependencyProperty OriginalFramerateTextProperty =
-            DependencyProperty.Register("OriginalFramerateText", typeof (string), typeof (MainWindow), new PropertyMetadata("From \"Unknown\" to"));
+            DependencyProperty.Register("OriginalFramerateText", typeof(string), typeof(MainWindow), new PropertyMetadata("From \"Unknown\" to"));
+
+        // Using a DependencyProperty as the backing store for ForcedWidth.  This enables animation, styling, binding, etc...
+        /// <summary>
+        ///     Forced target video width
+        /// </summary>
+        public static readonly DependencyProperty ForcedWidthProperty =
+            DependencyProperty.Register("ForcedWidth", typeof(int), typeof(MainWindow), new PropertyMetadata(0));
+
+        // Using a DependencyProperty as the backing store for ForcedHeight.  This enables animation, styling, binding, etc...
+        /// <summary>
+        ///     Forced target video height
+        /// </summary>
+        public static readonly DependencyProperty ForcedHeightProperty =
+            DependencyProperty.Register("ForcedHeight", typeof(int), typeof(MainWindow), new PropertyMetadata(0));
 
         /// <summary>
         ///     The command line opts
@@ -252,6 +278,8 @@ namespace FreeVideoFPSConverter
             NoFlickerMode = _cmdLineOpts.NoFlicker;
             NoFpsReduce = _cmdLineOpts.MinFrameRate;
             KeepAudio = _cmdLineOpts.KeepAudio;
+            ForcedWidth = _cmdLineOpts.ForceWidth;
+            ForcedHeight = _cmdLineOpts.ForceHeight;
 
             if (_cmdLineOpts.FramesPerSecond != null)
             {
@@ -314,6 +342,8 @@ namespace FreeVideoFPSConverter
                 ButtonBrowseTarget.IsEnabled = false;
                 CheckBoxKeyFrames.IsEnabled = false;
                 SpinnerFrameRate.IsEnabled = false;
+                TextBoxForcedWidth.IsEnabled = false;
+                TextBoxForcedHeight.IsEnabled = false;
                 ButtonConvert.IsEnabled = false;
                 ButtonAbout.IsEnabled = false;
 
@@ -419,8 +449,28 @@ namespace FreeVideoFPSConverter
         /// <value>The original framerate.</value>
         public string OriginalFramerateText
         {
-            get { return (string) GetValue(OriginalFramerateTextProperty); }
+            get { return (string)GetValue(OriginalFramerateTextProperty); }
             set { SetValue(OriginalFramerateTextProperty, value); }
+        }
+
+        /// <summary>
+        ///     Gets or sets the forced target width
+        /// </summary>
+        /// <value>The forced target width.</value>
+        public int ForcedWidth
+        {
+            get { return (int)GetValue(ForcedWidthProperty); }
+            set { SetValue(ForcedWidthProperty, value); }
+        }
+
+        /// <summary>
+        ///     Gets or sets the forced target height
+        /// </summary>
+        /// <value>The forced target height.</value>
+        public int ForcedHeight
+        {
+            get { return (int)GetValue(ForcedHeightProperty); }
+            set { SetValue(ForcedHeightProperty, value); }
         }
 
         /// <summary>
@@ -952,6 +1002,9 @@ namespace FreeVideoFPSConverter
                 double speedChangeFactor = targetFramerate/sourceFramerate;
                 int num, den;
 
+                int forcedWidth = ForcedWidth;
+                int forcedHeight = ForcedHeight;
+
                 ConvertDoubleToFraction(speedChangeFactor, out num, out den);
 
                 AddToLog(string.Format("Starting conversion process for {0} -> {1}, original fps {2:F2} to {3:F2} fps",
@@ -981,7 +1034,7 @@ namespace FreeVideoFPSConverter
                 string ffmpegCommand = "\"" + Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ExecutableFFmpeg) + "\"";
                 string extension = Path.GetExtension(TargetFilename) ?? ".h264";
                 string targetExtension = extension.ToLower();
-                string bitrateInKBits = CalculateBitRate(OriginalWidth, OriginalHeight, TargetFramerate) + "K";
+                string bitrateInKBits = "" + CalculateBitRate(OriginalWidth, OriginalHeight, TargetFramerate);
                 string ffmpegParametersString;
                 bool patchRequired = false;
 
@@ -995,7 +1048,18 @@ namespace FreeVideoFPSConverter
                         patchRequired = true;
                         break;
                     default:
-                        ffmpegParametersString = KeyFramesOnly ? ExecutableFFmpegParametersOnlyKeyFramesH264 : ExecutableFFmpegParametersStandardH264;
+                        if (forcedWidth != 0 && forcedHeight != 0)
+                        {
+                            ffmpegParametersString = KeyFramesOnly
+                                ? ExecutableFFmpegParametersOnlyKeyFramesH264WithForcedSize
+                                : ExecutableFFmpegParametersStandardH264WithForcedSize;
+                        }
+                        else
+                        {
+                            ffmpegParametersString = KeyFramesOnly
+                                ? ExecutableFFmpegParametersOnlyKeyFramesH264
+                                : ExecutableFFmpegParametersStandardH264;
+                        }
                         break;
                 }
 
@@ -1023,7 +1087,16 @@ namespace FreeVideoFPSConverter
                 }
 
                 // convert the video
-                ffmpegParameters = string.Format(ffmpegParametersString, _tempAvsFile, string.IsNullOrEmpty(_tempVideoFile) ? TargetFilename : _tempVideoFile, bitrateInKBits);
+                if (forcedWidth != 0 && forcedHeight != 0)
+                {
+                    ffmpegParameters = string.Format(ffmpegParametersString, _tempAvsFile, string.IsNullOrEmpty(_tempVideoFile) ? TargetFilename : _tempVideoFile, bitrateInKBits,
+                    forcedWidth, forcedHeight, TargetFramerate.ToString(CultureInfo.InvariantCulture));
+                }
+                else
+                {
+                    ffmpegParameters = string.Format(ffmpegParametersString, _tempAvsFile, string.IsNullOrEmpty(_tempVideoFile) ? TargetFilename : _tempVideoFile, bitrateInKBits);
+                }
+
                 AddToLog("--- CONVERTING VIDEO --------------------------------------------------");
                 AddToLog("Command:   " + ffmpegCommand);
                 AddToLog("Parameters:" + ffmpegParameters);
@@ -1089,6 +1162,8 @@ namespace FreeVideoFPSConverter
             ButtonBrowseTarget.IsEnabled = false;
             CheckBoxKeyFrames.IsEnabled = false;
             SpinnerFrameRate.IsEnabled = false;
+            TextBoxForcedWidth.IsEnabled = false;
+            TextBoxForcedHeight.IsEnabled = false;
             ButtonConvert.IsEnabled = false;
             ButtonAbout.IsEnabled = false;
 
@@ -1152,6 +1227,8 @@ namespace FreeVideoFPSConverter
             ButtonBrowseTarget.IsEnabled = true;
             CheckBoxKeyFrames.IsEnabled = true;
             SpinnerFrameRate.IsEnabled = true;
+            TextBoxForcedWidth.IsEnabled = true;
+            TextBoxForcedHeight.IsEnabled = true;
             ButtonConvert.IsEnabled = true;
             ButtonAbout.IsEnabled = true;
         }
@@ -1166,15 +1243,29 @@ namespace FreeVideoFPSConverter
             {
                 string xmlTargetFilename = TargetFilename + ".desc.xml";
 
+                int width, height;
+                if (ForcedWidth != 0 && ForcedHeight != 0)
+                {
+                    width = ForcedWidth;
+                    height = ForcedHeight;
+                }
+                else
+                {
+                    width = OriginalWidth;
+                    height = OriginalHeight;
+                }
+
                 XDocument doc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"),
                     new XElement("VideoInfo", new XAttribute(XNamespace.Xmlns + "xsi", "http://www.w3.org/2001/XMLSchema-instance"), new XAttribute(XNamespace.Xmlns + "xsd", "http://www.w3.org/2001/XMLSchema"),
                         new XElement("InputFilename", SourceFilename),
                         new XElement("OutputFilename", TargetFilename),
-                        new XElement("Width", OriginalWidth),
-                        new XElement("Height", OriginalHeight),
-                        new XElement("OriginalFramerateText", OriginalFramerate.ToString("N8    ", CultureInfo.InvariantCulture)),
+                        new XElement("Duration", OriginalDuration.ToString("N8", CultureInfo.InvariantCulture)),
+                        new XElement("Width", width),
+                        new XElement("Height", height),
                         new XElement("Framerate", TargetFramerate.ToString("N8", CultureInfo.InvariantCulture)),
-                        new XElement("Duration", OriginalDuration.ToString("N8", CultureInfo.InvariantCulture))));
+                        new XElement("OriginalWidth", OriginalWidth),
+                        new XElement("OriginalHeight", OriginalHeight),
+                        new XElement("OriginalFramerate", OriginalFramerate.ToString("N8", CultureInfo.InvariantCulture))));
 
                 doc.Save(xmlTargetFilename);
 
