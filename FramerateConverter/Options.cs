@@ -46,5 +46,11 @@ namespace FreeVideoFPSConverter
 
         [Option('a', "audio", Required = false, HelpText = "Keep audio stream(s) if any.")]
         public bool KeepAudio { get; set; }
+
+        [Option('W', "force-width", Required = false, HelpText = "Enforces target width.")]
+        public int ForceWidth { get; set; }
+
+        [Option('H', "force-height", Required = false, HelpText = "Enforces target height.")]
+        public int ForceHeight{ get; set; }
     }
 }
