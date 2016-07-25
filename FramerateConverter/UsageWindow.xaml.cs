@@ -14,7 +14,7 @@ namespace FreeVideoFPSConverter
     /// <summary>
     ///     Interaction logic for UsageWindow.xaml
     /// </summary>
-    public partial class UsageWindow : Window
+    public partial class UsageWindow
     {
         public UsageWindow()
         {
