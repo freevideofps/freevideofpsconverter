@@ -4,7 +4,7 @@
 // Created          : 07-17-2014
 //
 // Last Modified By : freevideofpsconverter@gmail.com
-// Last Modified On : 07-23-2014
+// Last Modified On : 07-25-2016
 // ***********************************************************************
 
 #region
@@ -32,20 +32,8 @@ namespace FreeVideoFPSConverter
     /// <summary>
     ///     Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow
+    public partial class MainWindow : IDisposable
     {
-        private struct Command2Execute
-        {
-            public Command2Execute(string command, string parameter)
-            {
-                Command = command;
-                Parameters = parameter;
-            }
-
-            public readonly string Command;
-            public readonly string Parameters;
-        };
-
         /// <summary>
         ///     The executable FFprobe.exe
         /// </summary>
@@ -90,36 +78,42 @@ namespace FreeVideoFPSConverter
         ///     The FFmpeg converter parameters for IVF (only Key Frames)
         /// </summary>
         private const string ExecutableFFmpegParametersOnlyKeyFramesIvf = @" -y -i ""{0}"" -c:v libvpx -b:v {2}K -g 1 -keyint_min 0 -sc_threshold 1 ""{1}""";
+
         //private const string ExecutableFFmpegParametersOnlyKeyFramesIvf = @" -y -i ""{0}"" -c:v libvpx -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
 
         /// <summary>
         ///     The FFmpeg converter parameters for IVF
         /// </summary>
         private const string ExecutableFFmpegParametersStandardIvf = @" -y -i ""{0}"" -c:v libvpx -b:v {2}K ""{1}""";
+
         //private const string ExecutableFFmpegParametersStandardIvf = @" -y -i ""{0}"" -c:v libvpx ""{1}""";
 
         /// <summary>
         ///     The FFmpeg converter parameters for H.264 (only Key Frames)
         /// </summary>
         private const string ExecutableFFmpegParametersOnlyKeyFramesH264 = @" -y -i ""{0}"" -tune zerolatency -x264opts bitrate={2}:vbv-maxrate={2}:vbv-bufsize=1000:slices=1:ref=1:no-scenecut:nal-hrd=cbr -g 1 -keyint_min 0 -c:v libx264 ""{1}""";
+
         //private const string ExecutableFFmpegParametersOnlyKeyFramesH264 = @" -y -i ""{0}"" -c:v libx264 -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
 
         /// <summary>
         ///     The FFmpeg converter parameters for H.264 (only Key Frames with forced size)
         /// </summary>
         private const string ExecutableFFmpegParametersOnlyKeyFramesH264WithForcedSize = @" -y -i ""{0}"" -filter_complex ""nullsrc=size={3}x{4},lutrgb=0:0:0,fps=fps={5} [base]; [0:v] setpts=PTS-STARTPTS,scale=w='min({3}\,iw):h=min({4}\,ih):force_original_aspect_ratio=decrease' [upperleft]; [base][upperleft] overlay=shortest=1"" -tune zerolatency -x264opts bitrate={2}:vbv-maxrate={2}:vbv-bufsize=1000:slices=1:ref=1:no-scenecut:nal-hrd=cbr -g 1 -keyint_min 0 -c:v libx264 ""{1}""";
+
         //private const string ExecutableFFmpegParametersOnlyKeyFramesH264 = @" -y -i ""{0}"" -c:v libx264 -g 1 -keyint_min 1 -sc_threshold 1 ""{1}""";
 
         /// <summary>
         ///     The FFmpeg converter parameters for H.264
         /// </summary>
         private const string ExecutableFFmpegParametersStandardH264 = @" -y -i ""{0}"" -c:v libx264 -b:v {2}K ""{1}""";
+
         //private const string ExecutableFFmpegParametersStandardH264 = @" -y -i ""{0}"" -c:v libx264 ""{1}""";
 
         /// <summary>
         ///     The FFmpeg converter parameters for H.264 (with forced size)
         /// </summary>
         private const string ExecutableFFmpegParametersStandardH264WithForcedSize = @" -y -i ""{0}"" -filter_complex ""nullsrc=size={3}x{4},lutrgb=0:0:0,fps=fps={5} [base]; [0:v] setpts=PTS-STARTPTS,scale=w='min({3}\,iw):h=min({4}\,ih):force_original_aspect_ratio=decrease' [upperleft]; [base][upperleft] overlay=shortest=1"" -c:v libx264 -b:v {2}K ""{1}""";
+
         //private const string ExecutableFFmpegParametersStandardH264 = @" -y -i ""{0}"" -c:v libx264 ""{1}""";
 
         /// <summary>
@@ -158,7 +152,7 @@ namespace FreeVideoFPSConverter
         ///     The target framerate property
         /// </summary>
         public static readonly DependencyProperty TargetFramerateProperty =
-            DependencyProperty.Register("TargetFramerate", typeof (double), typeof (MainWindow), new PropertyMetadata(60.0));
+            DependencyProperty.Register("TargetFramerate", typeof (double), typeof (MainWindow), new PropertyMetadata(0.0));
 
         // Using a DependencyProperty as the backing store for SourceFilename.  This enables animation, styling, binding, etc...
         /// <summary>
@@ -245,7 +239,7 @@ namespace FreeVideoFPSConverter
         /// </summary>
         public MainWindow()
         {
-            TargetFramerate = 60.0;
+            TargetFramerate = 0.0;
             _outputFrameCount = 0;
             OriginalFramerateText = "From \"Unknown\" to ";
 
@@ -311,25 +305,21 @@ namespace FreeVideoFPSConverter
 
 
             // check acceptance of agreement
-            RegistryKey keySoftware = Registry.CurrentUser.OpenSubKey("Software", true);
+            var keySoftware = Registry.CurrentUser.OpenSubKey("Software", true);
+            var keyApplication = keySoftware?.CreateSubKey("FreeVideoFPSConverter");
 
-            if (keySoftware != null)
+            if (keyApplication != null)
             {
-                RegistryKey keyApplication = keySoftware.CreateSubKey("FreeVideoFPSConverter");
-
-                if (keyApplication != null)
+                if (keyApplication.GetValue("LicenseAccepted") == null)
                 {
-                    if (keyApplication.GetValue("LicenseAccepted") == null)
+                    if (ShowLicense())
                     {
-                        if (ShowLicense())
-                        {
-                            keyApplication.SetValue("LicenseAccepted", "1");
-                        }
-                        else
-                        {
-                            Application.Current.Shutdown((int) ErrorCodes.LicenseNotAccepted);
-                            return;
-                        }
+                        keyApplication.SetValue("LicenseAccepted", "1");
+                    }
+                    else
+                    {
+                        Application.Current.Shutdown((int) ErrorCodes.LicenseNotAccepted);
+                        return;
                     }
                 }
             }
@@ -361,10 +351,7 @@ namespace FreeVideoFPSConverter
         ///     Gets the version information.
         /// </summary>
         /// <value>The version information.</value>
-        public string VersionInfo
-        {
-            get { return "Version " + Assembly.GetExecutingAssembly().GetName().Version; }
-        }
+        public string VersionInfo => "Version " + Assembly.GetExecutingAssembly().GetName().Version;
 
         /// <summary>
         ///     Gets or sets a value indicating whether debug mode is active.
@@ -528,7 +515,7 @@ namespace FreeVideoFPSConverter
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void ButtonBrowseSource_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            var openFileDialog = new OpenFileDialog
             {
                 Title = "Select video file..",
                 InitialDirectory = !string.IsNullOrEmpty(LastSourceDirectory) ? LastSourceDirectory : AppDomain.CurrentDomain.BaseDirectory,
@@ -553,7 +540,7 @@ namespace FreeVideoFPSConverter
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void ButtonBrowseTarget_Click(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog {Title = "Select video file.."};
+            var saveFileDialog = new SaveFileDialog {Title = "Select video file.."};
 
             if (!string.IsNullOrEmpty(LastTargetDirectory))
             {
@@ -584,10 +571,10 @@ namespace FreeVideoFPSConverter
         /// <returns>System.String.</returns>
         private static string ExecuteAndGetOutput(string filename, string parameters)
         {
-            string output = string.Empty;
-            string error = string.Empty;
+            var output = string.Empty;
+            var error = string.Empty;
 
-            ProcessStartInfo processStartInfo = new ProcessStartInfo(filename, parameters)
+            var processStartInfo = new ProcessStartInfo(filename, parameters)
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -596,7 +583,7 @@ namespace FreeVideoFPSConverter
                 UseShellExecute = false
             };
 
-            Process process = new Process {StartInfo = processStartInfo};
+            var process = new Process {StartInfo = processStartInfo};
             process.OutputDataReceived += (s, e) => { output += e.Data; };
             process.ErrorDataReceived += (s, e) => { error += e.Data; };
             process.Start();
@@ -614,7 +601,7 @@ namespace FreeVideoFPSConverter
         private double GetVideoFileInformationAndUpdateFramerate()
         {
             // initialize defaults
-            double result = 0.0;
+            var result = 0.0;
             OriginalDuration = 0.0;
             OriginalWidth = 0;
             OriginalHeight = 0;
@@ -625,8 +612,8 @@ namespace FreeVideoFPSConverter
 
             _progressbarInitialized = false;
 
-            string command = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ExecutableFFprobe);
-            string output = ExecuteAndGetOutput(command, string.Format(ExecutableFFprobeStreamInfoParameters, SourceFilename));
+            var command = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ExecutableFFprobe);
+            var output = ExecuteAndGetOutput(command, string.Format(ExecutableFFprobeStreamInfoParameters, SourceFilename));
 
             if (string.IsNullOrEmpty(output))
             {
@@ -640,7 +627,7 @@ namespace FreeVideoFPSConverter
             }
 
             // extract frame rate
-            int fpsPositionInString = output.IndexOf(FFprobeOutputFramerate, StringComparison.Ordinal);
+            var fpsPositionInString = output.IndexOf(FFprobeOutputFramerate, StringComparison.Ordinal);
 
             if (fpsPositionInString < 0)
             {
@@ -653,14 +640,14 @@ namespace FreeVideoFPSConverter
                 return result;
             }
 
-            int startFpsPositionInString = fpsPositionInString + FFprobeOutputFramerate.Length;
-            int endOfFpsPositionInString = startFpsPositionInString + 1;
+            var startFpsPositionInString = fpsPositionInString + FFprobeOutputFramerate.Length;
+            var endOfFpsPositionInString = startFpsPositionInString + 1;
             while (endOfFpsPositionInString < output.Length && output[endOfFpsPositionInString] != '\"')
             {
                 ++endOfFpsPositionInString;
             }
 
-            string framerate = output.Substring(startFpsPositionInString, endOfFpsPositionInString - startFpsPositionInString);
+            var framerate = output.Substring(startFpsPositionInString, endOfFpsPositionInString - startFpsPositionInString);
 
             if (string.IsNullOrEmpty(framerate))
             {
@@ -674,7 +661,7 @@ namespace FreeVideoFPSConverter
             }
 
             // handle the case that there is a "/" in the string, so the real value has to be calculated
-            int positionOfDivider = framerate.IndexOf("/", StringComparison.Ordinal);
+            var positionOfDivider = framerate.IndexOf("/", StringComparison.Ordinal);
             if (positionOfDivider > 0)
             {
                 try
@@ -684,7 +671,7 @@ namespace FreeVideoFPSConverter
 
                     result = upper/lower;
 
-                    framerate = string.Format("{0:F2}", result);
+                    framerate = $"{result:F2}";
                 }
                 catch (Exception)
                 {
@@ -704,11 +691,11 @@ namespace FreeVideoFPSConverter
             }
 
             OriginalFramerate = result;
-            OriginalFramerateText = "From " + ((Math.Abs(result) < 1.0) ? @"""Unknown""" : string.Format("{0:F2}", result)) + " FPS to ";
+            OriginalFramerateText = "From " + (Math.Abs(result) < 1.0 ? @"""Unknown""" : $"{result:F2}") + " FPS to ";
 
             // extract width
             {
-                int widthPositionInString = output.IndexOf(FFprobeOutputWidth, StringComparison.Ordinal);
+                var widthPositionInString = output.IndexOf(FFprobeOutputWidth, StringComparison.Ordinal);
 
                 if (widthPositionInString < 0)
                 {
@@ -721,8 +708,8 @@ namespace FreeVideoFPSConverter
                     return result;
                 }
 
-                int startWidthPositionInString = widthPositionInString + FFprobeOutputWidth.Length;
-                int endOfWidthPositionInString = startWidthPositionInString + 1;
+                var startWidthPositionInString = widthPositionInString + FFprobeOutputWidth.Length;
+                var endOfWidthPositionInString = startWidthPositionInString + 1;
                 while (endOfWidthPositionInString < output.Length && char.IsDigit(output[endOfWidthPositionInString]))
                 {
                     ++endOfWidthPositionInString;
@@ -733,7 +720,7 @@ namespace FreeVideoFPSConverter
 
             // extract height
             {
-                int heightPositionInString = output.IndexOf(FFprobeOutputHeight, StringComparison.Ordinal);
+                var heightPositionInString = output.IndexOf(FFprobeOutputHeight, StringComparison.Ordinal);
 
                 if (heightPositionInString < 0)
                 {
@@ -746,8 +733,8 @@ namespace FreeVideoFPSConverter
                     return result;
                 }
 
-                int startHeightPositionInString = heightPositionInString + FFprobeOutputHeight.Length;
-                int endOfHeightPositionInString = startHeightPositionInString + 1;
+                var startHeightPositionInString = heightPositionInString + FFprobeOutputHeight.Length;
+                var endOfHeightPositionInString = startHeightPositionInString + 1;
                 while (endOfHeightPositionInString < output.Length && char.IsDigit(output[endOfHeightPositionInString]))
                 {
                     ++endOfHeightPositionInString;
@@ -758,7 +745,7 @@ namespace FreeVideoFPSConverter
 
             // extract duration
             {
-                int durationPositionInString = output.IndexOf(FFprobeOutputDuration, StringComparison.Ordinal);
+                var durationPositionInString = output.IndexOf(FFprobeOutputDuration, StringComparison.Ordinal);
 
                 if (durationPositionInString < 0)
                 {
@@ -771,8 +758,8 @@ namespace FreeVideoFPSConverter
                     return result;
                 }
 
-                int startDurationPositionInString = durationPositionInString + FFprobeOutputDuration.Length;
-                int endOfDurationPositionInString = startDurationPositionInString + 1;
+                var startDurationPositionInString = durationPositionInString + FFprobeOutputDuration.Length;
+                var endOfDurationPositionInString = startDurationPositionInString + 1;
                 while (endOfDurationPositionInString < output.Length && output[endOfDurationPositionInString] != '\"')
                 {
                     ++endOfDurationPositionInString;
@@ -807,7 +794,7 @@ namespace FreeVideoFPSConverter
                 return;
             }
 
-            string sourceExt = Path.GetExtension(SourceFilename).ToLower();
+            var sourceExt = Path.GetExtension(SourceFilename).ToLower();
 
             if (sourceExt != ".mpg" && sourceExt != ".avi" && sourceExt != ".wmv" && sourceExt != ".mov" && sourceExt != ".mp4" && sourceExt != ".h264" && sourceExt != ".mkv")
             {
@@ -831,7 +818,7 @@ namespace FreeVideoFPSConverter
                 return;
             }
 
-            string targetDir = Path.GetDirectoryName(TargetFilename);
+            var targetDir = Path.GetDirectoryName(TargetFilename);
 
             if (targetDir == null || !Directory.Exists(targetDir))
             {
@@ -844,7 +831,7 @@ namespace FreeVideoFPSConverter
                 return;
             }
 
-            string targetExt = Path.GetExtension(TargetFilename).ToLower();
+            var targetExt = Path.GetExtension(TargetFilename).ToLower();
 
             if (targetExt != ".mpg" && targetExt != ".avi" && targetExt != ".wmv" && targetExt != ".mov" && targetExt != ".mp4" && targetExt != ".h264" && targetExt != ".mkv" && targetExt != ".ivf" && targetExt != ".webm")
             {
@@ -879,7 +866,7 @@ namespace FreeVideoFPSConverter
                 }
                 else
                 {
-                    result = MessageBox.Show(string.Format("Do you want to overwrite {0}?", TargetFilename), "Target File already exists", MessageBoxButton.YesNo);
+                    result = MessageBox.Show($"Do you want to overwrite {TargetFilename}?", "Target File already exists", MessageBoxButton.YesNo);
                 }
 
                 if (result != MessageBoxResult.Yes)
@@ -894,9 +881,9 @@ namespace FreeVideoFPSConverter
                 }
             }
 
-            double sourceFramerate = GetVideoFileInformationAndUpdateFramerate();
+            var sourceFramerate = GetVideoFileInformationAndUpdateFramerate();
 
-            if (TargetFramerate < 10.0 || TargetFramerate > 200.0)
+            if (Math.Abs(TargetFramerate) > double.Epsilon && (TargetFramerate < 10.0 || TargetFramerate > 200.0))
             {
                 AddToLog("Error: Frame rate exceeds range 10-200!");
 
@@ -907,12 +894,12 @@ namespace FreeVideoFPSConverter
                 return;
             }
 
-            if (NoFpsReduce && TargetFramerate < OriginalFramerate)
+            if (NoFpsReduce || TargetFramerate < OriginalFramerate)
             {
                 TargetFramerate = OriginalFramerate;
             }
 
-            ConvertVideo(sourceFramerate, TargetFramerate);
+            ConvertVideo(sourceFramerate);
         }
 
         /// <summary>
@@ -951,7 +938,7 @@ namespace FreeVideoFPSConverter
             num = (int) (1000000*value);
             den = 1000000;
 
-            int tempGgt = Ggt(num, den);
+            var tempGgt = Ggt(num, den);
 
             num /= tempGgt;
             den /= tempGgt;
@@ -964,15 +951,15 @@ namespace FreeVideoFPSConverter
         /// <returns>System.String.</returns>
         private string GetTempFilename(string extension)
         {
-            string tempDir = Path.GetTempPath();
+            var tempDir = Path.GetTempPath();
             string tempPath;
-            Random rnd = new Random();
+            var rnd = new Random();
 
             for (; ; )
             {
-                int index = rnd.Next(0, 100000);
+                var index = rnd.Next(0, 100000);
 
-                tempPath = Path.Combine(tempDir, string.Format("conv{0:D6}.{1}", index, extension));
+                tempPath = Path.Combine(tempDir, $"conv{index:D6}.{extension}");
 
                 if (!File.Exists(tempPath))
                 {
@@ -987,8 +974,7 @@ namespace FreeVideoFPSConverter
         /// Converts the video.
         /// </summary>
         /// <param name="sourceFramerate">The source framerate.</param>
-        /// <param name="targetFramerate">The target framerate.</param>
-        private void ConvertVideo(double sourceFramerate, double targetFramerate)
+        private void ConvertVideo(double sourceFramerate)
         {
             StopAnyRunningProcess();
             CleanUp();
@@ -999,21 +985,18 @@ namespace FreeVideoFPSConverter
 
             try
             {
-                double speedChangeFactor = targetFramerate/sourceFramerate;
+                var speedChangeFactor = TargetFramerate/sourceFramerate;
                 int num, den;
 
-                int forcedWidth = ForcedWidth;
-                int forcedHeight = ForcedHeight;
+                var forcedWidth = ForcedWidth;
+                var forcedHeight = ForcedHeight;
 
                 ConvertDoubleToFraction(speedChangeFactor, out num, out den);
 
-                AddToLog(string.Format("Starting conversion process for {0} -> {1}, original fps {2:F2} to {3:F2} fps",
-                    Path.GetFileName(SourceFilename),
-                    Path.GetFileName(TargetFilename),
-                    sourceFramerate,
-                    TargetFramerate));
+                AddToLog(
+                    $"Starting conversion process for {Path.GetFileName(SourceFilename)} -> {Path.GetFileName(TargetFilename)}, original fps {sourceFramerate:F2} to {TargetFramerate:F2} fps");
 
-                using (StreamWriter outfile = new StreamWriter(_tempAvsFile))
+                using (var outfile = new StreamWriter(_tempAvsFile))
                 {
                     outfile.WriteLine("global threads=" + (1 + Environment.ProcessorCount));
                     outfile.WriteLine("global fps_num=\"" + num + "\"");
@@ -1022,21 +1005,21 @@ namespace FreeVideoFPSConverter
 
                     const string resourceName = "FreeVideoFPSConverter.Templates.FpsConversionInput.avs.template";
 
-                    Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
+                    var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
 
                     if (stream != null)
                     {
-                        StreamReader reader = new StreamReader(stream);
+                        var reader = new StreamReader(stream);
                         outfile.WriteLine(reader.ReadToEnd());
                     }
                 }
 
-                string ffmpegCommand = "\"" + Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ExecutableFFmpeg) + "\"";
-                string extension = Path.GetExtension(TargetFilename) ?? ".h264";
-                string targetExtension = extension.ToLower();
-                string bitrateInKBits = "" + CalculateBitRate(OriginalWidth, OriginalHeight, TargetFramerate);
+                var ffmpegCommand = "\"" + Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ExecutableFFmpeg) + "\"";
+                var extension = Path.GetExtension(TargetFilename) ?? ".h264";
+                var targetExtension = extension.ToLower();
+                var bitrateInKBits = "" + CalculateBitRate(OriginalWidth, OriginalHeight, TargetFramerate);
                 string ffmpegParametersString;
-                bool patchRequired = false;
+                var patchRequired = false;
 
                 switch (targetExtension)
                 {
@@ -1063,7 +1046,7 @@ namespace FreeVideoFPSConverter
                         break;
                 }
 
-                List<Command2Execute> commands2Execute = new List<Command2Execute>();
+                var commands2Execute = new List<Command2Execute>();
 
                 string ffmpegParameters;
 
@@ -1138,7 +1121,7 @@ namespace FreeVideoFPSConverter
         /// </summary>
         public static void ProcessUiTasks()
         {
-            DispatcherFrame frame = new DispatcherFrame();
+            var frame = new DispatcherFrame();
             Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new DispatcherOperationCallback(delegate
             {
                 frame.Continue = false;
@@ -1167,9 +1150,9 @@ namespace FreeVideoFPSConverter
             ButtonConvert.IsEnabled = false;
             ButtonAbout.IsEnabled = false;
 
-            foreach (Command2Execute command2Execute in commands2Execute)
+            foreach (var command2Execute in commands2Execute)
             {
-                ProcessStartInfo processStartInfo = new ProcessStartInfo(command2Execute.Command, command2Execute.Parameters)
+                var processStartInfo = new ProcessStartInfo(command2Execute.Command, command2Execute.Parameters)
                 {
                     WorkingDirectory = _workingDirectory,
                     RedirectStandardOutput = true,
@@ -1241,7 +1224,7 @@ namespace FreeVideoFPSConverter
         {
             try
             {
-                string xmlTargetFilename = TargetFilename + ".desc.xml";
+                var xmlTargetFilename = TargetFilename + ".desc.xml";
 
                 int width, height;
                 if (ForcedWidth != 0 && ForcedHeight != 0)
@@ -1255,7 +1238,7 @@ namespace FreeVideoFPSConverter
                     height = OriginalHeight;
                 }
 
-                XDocument doc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"),
+                var doc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"),
                     new XElement("VideoInfo", new XAttribute(XNamespace.Xmlns + "xsi", "http://www.w3.org/2001/XMLSchema-instance"), new XAttribute(XNamespace.Xmlns + "xsd", "http://www.w3.org/2001/XMLSchema"),
                         new XElement("InputFilename", SourceFilename),
                         new XElement("OutputFilename", TargetFilename),
@@ -1287,7 +1270,7 @@ namespace FreeVideoFPSConverter
         /// <param name="e">The <see cref="DataReceivedEventArgs" /> instance containing the event data.</param>
         private void process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            if (null == e || null == e.Data)
+            if (e?.Data == null)
             {
                 return;
             }
@@ -1307,7 +1290,7 @@ namespace FreeVideoFPSConverter
         /// <param name="e">The <see cref="DataReceivedEventArgs" /> instance containing the event data.</param>
         private void process_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            if (null == e || null == e.Data)
+            if (e?.Data == null)
             {
                 return;
             }
@@ -1328,29 +1311,29 @@ namespace FreeVideoFPSConverter
         {
             if (_progressbarInitialized && OriginalDuration > 0)
             {
-                int posFrame = message.IndexOf("frame=", StringComparison.Ordinal);
+                var posFrame = message.IndexOf("frame=", StringComparison.Ordinal);
 
                 if (posFrame >= 0)
                 {
                     posFrame += "frame=".Length;
 
-                    int posEnd = posFrame + 1;
+                    var posEnd = posFrame + 1;
                     while (char.IsDigit(message[posEnd]) || char.IsWhiteSpace(message[posEnd]))
                     {
                         posEnd++;
                     }
 
-                    string frameCountAsString = message.Substring(posFrame, posEnd - posFrame).Trim();
+                    var frameCountAsString = message.Substring(posFrame, posEnd - posFrame).Trim();
                     long.TryParse(frameCountAsString, out _outputFrameCount);
                 }
                 
-                int posTime = message.IndexOf("time=", StringComparison.Ordinal);
+                var posTime = message.IndexOf("time=", StringComparison.Ordinal);
 
                 if (posTime >= 0)
                 {
                     posTime += "time=".Length;
 
-                    double seconds = 0.0;
+                    var seconds = 0.0;
 
                     try
                     {
@@ -1359,7 +1342,7 @@ namespace FreeVideoFPSConverter
                         seconds += long.Parse(message.Substring(posTime + 6, 2));
                         seconds += 0.01*long.Parse(message.Substring(posTime + 9, 2));
 
-                        double percentage = seconds*100.0/OriginalDuration;
+                        var percentage = seconds*100.0/OriginalDuration;
 
                         if (percentage > 99.5)
                         {
@@ -1387,7 +1370,7 @@ namespace FreeVideoFPSConverter
         /// <param name="percentage">The percentage.</param>
         private void UpdateHeader(double? percentage = null)
         {
-            string newHeader = "Video Frame Rate Converter";
+            var newHeader = "Video Frame Rate Converter";
 
             if (!string.IsNullOrEmpty(SourceFilename))
             {
@@ -1448,7 +1431,7 @@ namespace FreeVideoFPSConverter
         /// <param name="filenName">Name of the filen.</param>
         private void DeleteFile(string filenName)
         {
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 if (!string.IsNullOrEmpty(filenName) && File.Exists(filenName))
                 {
@@ -1547,7 +1530,7 @@ namespace FreeVideoFPSConverter
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         private static bool ShowLicense()
         {
-            AboutWindow newWindow = new AboutWindow();
+            var newWindow = new AboutWindow();
             newWindow.ShowDialog();
 
             return newWindow.DialogResult.HasValue && newWindow.DialogResult.Value;
@@ -1560,25 +1543,18 @@ namespace FreeVideoFPSConverter
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void ButtonAbout_Click(object sender, RoutedEventArgs e)
         {
-            AboutWindow newWindow = new AboutWindow();
+            var newWindow = new AboutWindow();
             newWindow.ShowDialog();
 
             if (!newWindow.DialogResult.HasValue || !newWindow.DialogResult.Value)
             {
                 // remove acceptance of license
-                RegistryKey keySoftware = Registry.CurrentUser.OpenSubKey("Software", true);
+                var keySoftware = Registry.CurrentUser.OpenSubKey("Software", true);
+                var keyApplication = keySoftware?.CreateSubKey("FreeVideoFPSConverter");
 
-                if (keySoftware != null)
+                if (keyApplication?.GetValue("LicenseAccepted") != null)
                 {
-                    RegistryKey keyApplication = keySoftware.CreateSubKey("FreeVideoFPSConverter");
-
-                    if (keyApplication != null)
-                    {
-                        if (keyApplication.GetValue("LicenseAccepted") != null)
-                        {
-                            keyApplication.DeleteValue("LicenseAccepted");
-                        }
-                    }
+                    keyApplication.DeleteValue("LicenseAccepted");
                 }
 
                 Application.Current.Shutdown((int) ErrorCodes.Canceled);
@@ -1587,7 +1563,7 @@ namespace FreeVideoFPSConverter
 
         private void ButtonUsage_OnClick(object sender, RoutedEventArgs e)
         {
-            UsageWindow newWindow = new UsageWindow();
+            var newWindow = new UsageWindow();
             newWindow.ShowDialog();
         }
 
@@ -1597,8 +1573,8 @@ namespace FreeVideoFPSConverter
         /// <returns><c>true</c> if no exception when creating output <c>false</c> otherwise.</returns>
         private bool CreateXmlFrameInfoFile()
         {
-            string command = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ExecutableFFprobe);
-            string output = ExecuteAndGetOutput(command, string.Format(ExecutableFFprobeFramesInfoParameters, TargetFilename));
+            var command = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ExecutableFFprobe);
+            var output = ExecuteAndGetOutput(command, string.Format(ExecutableFFprobeFramesInfoParameters, TargetFilename));
 
             if (string.IsNullOrEmpty(output))
             {
@@ -1611,12 +1587,12 @@ namespace FreeVideoFPSConverter
                 return true;
             }
 
-            Regex rgx = new Regex("frames\\.frame\\.\\d+\\.pkt_size=\"(\\d+)\"");
-            MatchCollection allMatches = rgx.Matches(output);
+            var rgx = new Regex("frames\\.frame\\.\\d+\\.pkt_size=\"(\\d+)\"");
+            var allMatches = rgx.Matches(output);
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
-            for (int i = 0; i < allMatches.Count; ++i)
+            for (var i = 0; i < allMatches.Count; ++i)
             {
                 sb.Append("<Frame length=");
                 sb.Append(allMatches[i].Groups[1].Value);
@@ -1624,7 +1600,7 @@ namespace FreeVideoFPSConverter
                 sb.Append(Environment.NewLine);
             }
 
-            string xmlTargetFilename = TargetFilename + ".xml";
+            var xmlTargetFilename = TargetFilename + ".xml";
 
             try
             {
@@ -1654,9 +1630,9 @@ namespace FreeVideoFPSConverter
         /// <param name="e">The <see cref="DragEventArgs" /> instance containing the event data.</param>
         private void TextBox_PreviewDropSourceFilename(object sender, DragEventArgs e)
         {
-            object text = e.Data.GetData(DataFormats.FileDrop);
+            var text = e.Data.GetData(DataFormats.FileDrop);
 
-            SourceFilename = string.Format("{0}", ((string[]) text)[0]);
+            SourceFilename = $"{((string[]) text)[0]}";
         }
 
         /// <summary>
@@ -1666,9 +1642,9 @@ namespace FreeVideoFPSConverter
         /// <param name="e">The <see cref="DragEventArgs" /> instance containing the event data.</param>
         private void TextBox_PreviewDropTargetFilename(object sender, DragEventArgs e)
         {
-            object text = e.Data.GetData(DataFormats.FileDrop);
+            var text = e.Data.GetData(DataFormats.FileDrop);
 
-            TargetFilename = string.Format("{0}", ((string[]) text)[0]);
+            TargetFilename = $"{((string[]) text)[0]}";
         }
 
         /// <summary>
@@ -1694,13 +1670,13 @@ namespace FreeVideoFPSConverter
         private static int CalculateBitRate(int width, int height, double framerate)
         {
 
-            int iMotionFactor = 2;
+            var iMotionFactor = 2;
             if (width < 320 || height < 240)
             {
                 iMotionFactor = 4;
             }
 
-            double dbBitRate = width * height * framerate * 0.07 * iMotionFactor;
+            var dbBitRate = width * height * framerate * 0.07 * iMotionFactor;
             dbBitRate /= 1000;  // convert the target bit rate to kilobits per second
 
             return 500 * (int)((dbBitRate + 499) / 500);
@@ -1713,7 +1689,7 @@ namespace FreeVideoFPSConverter
         {
             try
             {
-                using (FileStream fs = File.Open(TargetFilename, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
+                using (var fs = File.Open(TargetFilename, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
                 {
                     //bytes 0-3    signature: 'DKIF'
                     //bytes 4-5    version (should be 0)
@@ -1725,7 +1701,7 @@ namespace FreeVideoFPSConverter
                     //bytes 20-23  time scale
                     //bytes 24-27  number of frames in file (*) 
                     //bytes 28-31  unused
-                    byte[] numberOfFrames = new byte[4];
+                    var numberOfFrames = new byte[4];
 
                     fs.Seek(24, SeekOrigin.Begin);
                     fs.Read(numberOfFrames, 0, 4);
@@ -1748,5 +1724,43 @@ namespace FreeVideoFPSConverter
                 AddToLog("Error: Cannot patch target file " + TargetFilename + "!");
             }
         }
+
+        private struct Command2Execute
+        {
+            public Command2Execute(string command, string parameter)
+            {
+                Command = command;
+                Parameters = parameter;
+            }
+
+            public readonly string Command;
+            public readonly string Parameters;
+        }
+
+        #region IDisposable Support
+
+        private bool disposedValue; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _runningProcess.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
+
+        #endregion
     }
 }
