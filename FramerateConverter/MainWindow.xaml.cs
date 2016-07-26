@@ -894,7 +894,7 @@ namespace FreeVideoFPSConverter
                 return;
             }
 
-            if (NoFpsReduce || TargetFramerate < OriginalFramerate)
+            if ((Math.Abs(TargetFramerate) < double.Epsilon) || (NoFpsReduce && (TargetFramerate < OriginalFramerate)))
             {
                 TargetFramerate = OriginalFramerate;
             }
