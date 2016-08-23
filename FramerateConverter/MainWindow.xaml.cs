@@ -254,6 +254,7 @@ namespace FreeVideoFPSConverter
             InitializeComponent();
 
             if (!Parser.Default.ParseArguments(Environment.GetCommandLineArgs(), _cmdLineOpts))
+            if (!Parser.Default.ParseArguments(Environment.GetCommandLineArgs(), _cmdLineOpts))
             {
                 Application.Current.Shutdown((int) ErrorCodes.IllegalCommand);
             }
@@ -1476,6 +1477,12 @@ namespace FreeVideoFPSConverter
                 DeleteFile(_tempAvsFile);
                 _tempAvsFile = string.Empty;
             }
+
+            string indexFile = SourceFilename + ".ffindex";
+            if (File.Exists(indexFile))
+            {
+                DeleteFile(indexFile);
+            }
         }
 
         /// <summary>
@@ -1739,18 +1746,18 @@ namespace FreeVideoFPSConverter
 
         #region IDisposable Support
 
-        private bool disposedValue; // To detect redundant calls
+        private bool _disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
                     _runningProcess.Dispose();
                 }
 
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 
