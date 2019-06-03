@@ -131,6 +131,11 @@ namespace FreeVideoFPSConverter
         /// </summary>
         private const string MediaFilter = @"Video Files|*.mpg;*.avi;*.wmv;*.mov;*.mp4;*.h264;*.mkv;*.ivf;*.webm|All Files|*.*";
 
+
+        // Using a DependencyProperty as the backing store for BitrateKBits.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty BitrateKBitsProperty =
+            DependencyProperty.Register("BitrateKBits", typeof(int), typeof(MainWindow), new PropertyMetadata(0));
+
         // Using a DependencyProperty as the backing store for KeyFramesOnly.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty KeyFramesOnlyProperty =
             DependencyProperty.Register("KeyFramesOnly", typeof (bool), typeof (MainWindow), new PropertyMetadata(false));
@@ -192,7 +197,7 @@ namespace FreeVideoFPSConverter
         /// <summary>
         ///     The command line opts
         /// </summary>
-        private readonly Options _cmdLineOpts = new Options();
+        private Options _cmdLineOpts = null;// = new Options();
 
         /// <summary>
         ///     The working directory
@@ -234,30 +239,17 @@ namespace FreeVideoFPSConverter
         /// </summary>
         private string _tempVideoFile = string.Empty;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="MainWindow" /> class.
-        /// </summary>
-        public MainWindow()
+
+        private bool ParseCommandLine()
         {
-            TargetFramerate = 0.0;
-            _outputFrameCount = 0;
-            OriginalFramerateText = "From \"Unknown\" to ";
+            return false;
+        }
 
-#if DEBUG
-            SourceFilename = @"C:\tmp\input.mp4";
-            TargetFilename = @"C:\tmp\output.ivf";
-#else
-            SourceFilename = string.Empty;
-            TargetFilename = string.Empty;
-#endif
 
-            InitializeComponent();
+        private void Run(Options options)
+        {
+            _cmdLineOpts = options;
 
-            if (!Parser.Default.ParseArguments(Environment.GetCommandLineArgs(), _cmdLineOpts))
-            if (!Parser.Default.ParseArguments(Environment.GetCommandLineArgs(), _cmdLineOpts))
-            {
-                Application.Current.Shutdown((int) ErrorCodes.IllegalCommand);
-            }
 
             if (!string.IsNullOrEmpty(_cmdLineOpts.SourceFile))
             {
@@ -275,6 +267,7 @@ namespace FreeVideoFPSConverter
             KeepAudio = _cmdLineOpts.KeepAudio;
             ForcedWidth = _cmdLineOpts.ForceWidth;
             ForcedHeight = _cmdLineOpts.ForceHeight;
+            BitrateKBits = _cmdLineOpts.BitrateKBits;
 
             if (_cmdLineOpts.FramesPerSecond != null)
             {
@@ -282,7 +275,7 @@ namespace FreeVideoFPSConverter
                 {
                     if (_cmdLineOpts.BatchMode)
                     {
-                        Application.Current.Shutdown((int) ErrorCodes.IllegalFps);
+                        Application.Current.Shutdown((int)ErrorCodes.IllegalFps);
                     }
 
                     _cmdLineOpts.FramesPerSecond = SpinnerFrameRate.Minimum;
@@ -292,7 +285,7 @@ namespace FreeVideoFPSConverter
                 {
                     if (_cmdLineOpts.BatchMode)
                     {
-                        Application.Current.Shutdown((int) ErrorCodes.IllegalFps);
+                        Application.Current.Shutdown((int)ErrorCodes.IllegalFps);
                     }
 
                     _cmdLineOpts.FramesPerSecond = SpinnerFrameRate.Maximum;
@@ -300,7 +293,7 @@ namespace FreeVideoFPSConverter
 
                 if (_cmdLineOpts.FramesPerSecond != null)
                 {
-                    TargetFramerate = (int) _cmdLineOpts.FramesPerSecond;
+                    TargetFramerate = (int)_cmdLineOpts.FramesPerSecond;
                 }
             }
 
@@ -319,7 +312,7 @@ namespace FreeVideoFPSConverter
                     }
                     else
                     {
-                        Application.Current.Shutdown((int) ErrorCodes.LicenseNotAccepted);
+                        Application.Current.Shutdown((int)ErrorCodes.LicenseNotAccepted);
                         return;
                     }
                 }
@@ -339,13 +332,44 @@ namespace FreeVideoFPSConverter
                 ButtonAbout.IsEnabled = false;
 
                 Application.Current.Dispatcher.BeginInvoke(
-                    (Action) (() => ButtonConvert_Click(ButtonConvert, null)));
+                    (Action)(() => ButtonConvert_Click(ButtonConvert, null)));
             }
 
             if (!string.IsNullOrEmpty(SourceFilename))
             {
                 GetVideoFileInformationAndUpdateFramerate();
             }
+        }
+
+        private void Exit()
+        {
+            Application.Current.Shutdown((int)ErrorCodes.IllegalCommand);
+        }
+
+
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="MainWindow" /> class.
+        /// </summary>
+        public MainWindow()
+        {
+            TargetFramerate = 0.0;
+            _outputFrameCount = 0;
+            OriginalFramerateText = "From \"Unknown\" to ";
+
+#if DEBUG
+            SourceFilename = @"C:\tmp\input.mp4";
+            TargetFilename = @"C:\tmp\output.ivf";
+#else
+            SourceFilename = string.Empty;
+            TargetFilename = string.Empty;
+#endif
+
+            InitializeComponent();
+
+            CommandLine.Parser.Default.ParseArguments<Options>(Environment.GetCommandLineArgs())
+                .WithParsed<Options>(opts => Run(opts))
+                .WithNotParsed<Options>((errs) => Exit());
         }
 
         /// <summary>
@@ -359,6 +383,12 @@ namespace FreeVideoFPSConverter
         /// </summary>
         /// <value><c>true</c> if [debug mode]; otherwise, <c>false</c>.</value>
         public bool DebugMode { get; set; }
+
+        public int BitrateKBits
+        {
+            get { return (int) GetValue(BitrateKBitsProperty); }
+            set { SetValue(BitrateKBitsProperty, value); }
+        }
 
         public bool KeyFramesOnly
         {
@@ -884,7 +914,7 @@ namespace FreeVideoFPSConverter
 
             var sourceFramerate = GetVideoFileInformationAndUpdateFramerate();
 
-            if (Math.Abs(TargetFramerate) > double.Epsilon && (TargetFramerate < 10.0 || TargetFramerate > 200.0))
+            if (Math.Abs(TargetFramerate) > double.Epsilon && (TargetFramerate < 10.0 || TargetFramerate > 5000/*200.0*/))
             {
                 AddToLog("Error: Frame rate exceeds range 10-200!");
 
@@ -1018,7 +1048,10 @@ namespace FreeVideoFPSConverter
                 var ffmpegCommand = "\"" + Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ExecutableFFmpeg) + "\"";
                 var extension = Path.GetExtension(TargetFilename) ?? ".h264";
                 var targetExtension = extension.ToLower();
-                var bitrateInKBits = "" + CalculateBitRate(OriginalWidth, OriginalHeight, TargetFramerate);
+                var bitrateInKBits = "" + (BitrateKBits > 0 ? BitrateKBits : CalculateBitRate(OriginalWidth, OriginalHeight, TargetFramerate));
+
+                //TargetFramerate ;
+
                 string ffmpegParametersString;
                 var patchRequired = false;
 
@@ -1673,16 +1706,10 @@ namespace FreeVideoFPSConverter
         /// <param name="width">The width.</param>
         /// <param name="height">The height.</param>
         /// <param name="framerate">The framerate.</param>
-        /// <returns>Bitrate in KBits (int)</returns>
+        /// <returns>BitrateKBits in KBits (int)</returns>
         private static int CalculateBitRate(int width, int height, double framerate)
         {
-
-            var iMotionFactor = 2;
-            if (width < 320 || height < 240)
-            {
-                iMotionFactor = 4;
-            }
-
+            var iMotionFactor = 4;
             var dbBitRate = width * height * framerate * 0.07 * iMotionFactor;
             dbBitRate /= 1000;  // convert the target bit rate to kilobits per second
 

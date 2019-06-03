@@ -15,6 +15,7 @@ using CommandLine;
 //-v, --version					--
 //-h, --help					--
 //-a, --audio                   --
+//-B, --bitrate                 --
 
 namespace FreeVideoFPSConverter
 {
@@ -52,5 +53,9 @@ namespace FreeVideoFPSConverter
 
         [Option('H', "force-height", Required = false, HelpText = "Enforces target height.")]
         public int ForceHeight{ get; set; }
+
+        [Option('B', "bitrate", Required = false, HelpText = "target bitrate in KBits.")]
+        public int BitrateKBits { get; set; }
+
     }
 }

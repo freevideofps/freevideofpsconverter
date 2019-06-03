@@ -2,8 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Free Video FPS Converter"
-#define MyAppVersion "0.0.9.6"
-#define MyAppVersionDword "$00000906"
+#define MyAppVersion "0.0.9.7"
+#define MyAppVersionDword "$00000907"
 #define MyAppPublisher "FreeVideoFPSConverter@gmail.com"
 #define MyAppExeName "FreeVideoFPSConverter.exe"
 
@@ -11,7 +11,7 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{D68BA29B-4C51-4375-BDAA-38DB85091EF5}
+AppId={97ED9B22-2716-407B-A64C-05D9560116D1}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
