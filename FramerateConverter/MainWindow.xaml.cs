@@ -1276,13 +1276,13 @@ namespace FreeVideoFPSConverter
                     new XElement("VideoInfo", new XAttribute(XNamespace.Xmlns + "xsi", "http://www.w3.org/2001/XMLSchema-instance"), new XAttribute(XNamespace.Xmlns + "xsd", "http://www.w3.org/2001/XMLSchema"),
                         new XElement("InputFilename", SourceFilename),
                         new XElement("OutputFilename", TargetFilename),
-                        new XElement("Duration", OriginalDuration.ToString("N8", CultureInfo.InvariantCulture)),
+                        new XElement("Duration", OriginalDuration.ToString("F8", CultureInfo.InvariantCulture)),
                         new XElement("Width", width),
                         new XElement("Height", height),
-                        new XElement("Framerate", TargetFramerate.ToString("N8", CultureInfo.InvariantCulture)),
+                        new XElement("Framerate", TargetFramerate.ToString("F8", CultureInfo.InvariantCulture)),
                         new XElement("OriginalWidth", OriginalWidth),
                         new XElement("OriginalHeight", OriginalHeight),
-                        new XElement("OriginalFramerate", OriginalFramerate.ToString("N8", CultureInfo.InvariantCulture))));
+                        new XElement("OriginalFramerate", OriginalFramerate.ToString("F8", CultureInfo.InvariantCulture))));
 
                 doc.Save(xmlTargetFilename);
 
