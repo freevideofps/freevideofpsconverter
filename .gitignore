@@ -5,3 +5,5 @@
 /.vs
 /FramerateConverter/obj
 /FramerateConverter/bin
+/FramerateConverter/master
+/*.user
