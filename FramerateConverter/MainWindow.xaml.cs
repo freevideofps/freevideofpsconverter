@@ -1378,7 +1378,7 @@ namespace FreeVideoFPSConverter
 
                         var percentage = seconds*100.0/OriginalDuration;
 
-                        if (percentage > 99.5)
+                        if (percentage > 99.4)
                         {
                             percentage = 100.0;
                         }

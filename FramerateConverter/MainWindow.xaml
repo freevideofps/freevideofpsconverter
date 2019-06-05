@@ -174,7 +174,7 @@
                      x:Name="ProgressBarConversion" Width="Auto" Height="16"
                      VerticalAlignment="Center" ToolTip="Conversion Progress" BorderThickness="0" Margin="0,10"
                      Foreground="#FCE299" />
-        <TextBlock Grid.Row="5" Grid.Column="3" Width="32"
+        <TextBlock Grid.Row="5" Grid.Column="3" Width="45"
                    Text="{Binding ElementName=ProgressBarConversion, Path=Value, StringFormat={}{0:F2}%}"
                    HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Blue" Height="16" Margin="151,10,124,10" />
         <!-- list box-->
