@@ -16,12 +16,12 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-DefaultDirName={pf}\{#MyAppName}
+DefaultDirName={commonpf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
-LicenseFile=.\Templates\GPLv2.txt
-OutputDir=.\master
+LicenseFile=.\FramerateConverter\Templates\GPLv2.txt
+OutputDir=.\FramerateConverter\master
 OutputBaseFilename=setupFreeVideoFPSConverter
-SetupIconFile=.\Images\app.ico
+SetupIconFile=.\FramerateConverter\Images\app.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -32,13 +32,13 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: ".\bin\Release\FreeVideoFPSConverter.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\FreeVideoFPSConverter.exe.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\CommandLine.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\Xceed.Wpf.Toolkit.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\bin\Release\tools\*.*"; DestDir: "{app}\tools"; Flags: ignoreversion
-Source: ".\bin\Release\tools\plugins\*.dll"; DestDir: "{app}\tools\plugins"; Flags: ignoreversion
-Source: ".\bin\Release\tools\Licenses\*.*"; DestDir: "{app}\Licenses"; Flags: ignoreversion
+Source: ".\FramerateConverter\bin\Release\FreeVideoFPSConverter.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\FramerateConverter\bin\Release\FreeVideoFPSConverter.exe.config"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\FramerateConverter\bin\Release\CommandLine.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\FramerateConverter\bin\Release\Xceed.Wpf.Toolkit.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\FramerateConverter\bin\Release\tools\*.*"; DestDir: "{app}\tools"; Flags: ignoreversion
+Source: ".\FramerateConverter\bin\Release\tools\plugins\*.dll"; DestDir: "{app}\tools\plugins"; Flags: ignoreversion
+Source: ".\FramerateConverter\bin\Release\tools\Licenses\*.*"; DestDir: "{app}\Licenses"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
