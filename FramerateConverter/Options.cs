@@ -39,7 +39,7 @@ namespace FreeVideoFPSConverter
         [Option('n', "no-flicker", Required = false, HelpText = "Reduce flicker by adjusting frame rate.")]
         public bool NoFlicker { get; set; }
 
-        [Option('m', "min-frame-rate", Required = false, HelpText = "The suuplied frame rate is a minimum.")]
+        [Option('m', "min-frame-rate", Required = false, HelpText = "The supplied frame rate is a minimum.")]
         public bool MinFrameRate { get; set; }
 
         [Option('o', "overwrite", Required = false, HelpText = "If output video exists, it will be overwritten.")]
@@ -54,7 +54,7 @@ namespace FreeVideoFPSConverter
         [Option('H', "force-height", Required = false, HelpText = "Enforces target height.")]
         public int ForceHeight{ get; set; }
 
-        [Option('B', "bitrate", Required = false, HelpText = "target bitrate in KBits.")]
+        [Option('B', "bitrate", Required = false, HelpText = "target bit rate in KBits.")]
         public int BitrateKBits { get; set; }
 
     }

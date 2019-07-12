@@ -102,8 +102,6 @@ namespace FreeVideoFPSConverter
         /// </summary>
         private const string ExecutableFFmpegParametersStandardH264WithForcedSize = @" -y -i ""{0}"" -filter_complex ""nullsrc=size={3}x{4},lutrgb=0:0:0,fps=fps={5} [base]; [0:v] setpts=PTS-STARTPTS,scale=w='min({3}\,iw):h=min({4}\,ih):force_original_aspect_ratio=decrease' [upperleft]; [base][upperleft] overlay=shortest=1"" -c:v libx264 -b:v {2}K ""{1}""";
 
-        //private const string ExecutableFFmpegParametersStandardH264 = @" -y -i ""{0}"" -c:v libx264 ""{1}""";
-
         /// <summary>
         ///     The FFmpeg converter parameters to extract an audio stream
         /// </summary>
@@ -891,14 +889,34 @@ namespace FreeVideoFPSConverter
             if (File.Exists(TargetFilename))
             {
                 MessageBoxResult result;
-
                 if (_cmdLineOpts.BatchMode && _cmdLineOpts.Overwrite)
                 {
                     result = MessageBoxResult.Yes;
                 }
                 else
                 {
-                    result = MessageBox.Show($"Do you want to overwrite {TargetFilename}?", "Target File already exists", MessageBoxButton.YesNo);
+                    bool isCompressedFile = ZipFile.IsZipFile(TargetFilename);
+                    if (isCompressedFile)
+                    {
+                        string videoFileName = Path.GetFileName(SourceFilename);
+                        result = MessageBox.Show($"Do you want to add the video '{videoFileName}' to the container file {TargetFilename}?", "Target File already exists", MessageBoxButton.YesNo);
+                        if (result == MessageBoxResult.Yes)
+                        {
+                            bool alreadyExists = PackageContainsFile(TargetFilename, videoFileName);
+                            if (alreadyExists)
+                            {
+                                result = MessageBox.Show($"The container {TargetFilename} already contains a video with the name '{videoFileName}'\n\nDo you want to overwrite {videoFileName} in the container?", "File already exists", MessageBoxButton.YesNo);
+                            }
+                        } 
+                        else if (result == MessageBoxResult.No)
+                        {
+                            result = MessageBox.Show($"Do you want to overwrite {TargetFilename}?", "Target File already exists", MessageBoxButton.YesNo);
+                        }
+                    }
+                    else
+                    {
+                        result = MessageBox.Show($"Do you want to overwrite {TargetFilename}?", "Target File already exists", MessageBoxButton.YesNo);
+                    }
                 }
 
                 if (result != MessageBoxResult.Yes)
@@ -1132,7 +1150,6 @@ namespace FreeVideoFPSConverter
                     _tempVideoFile = string.Empty;
                 }
 
-                //_tempCompressionTargetFile = compressionRequired ? Path.Combine(GetTempFolderPath(), Path.GetFileNameWithoutExtension(TargetFilename) + targetExtension) : string.Empty;
                 _tempCompressionTargetFile = string.Empty;
                 if (compressionRequired)
                 {
@@ -1140,7 +1157,7 @@ namespace FreeVideoFPSConverter
                     if (!Directory.Exists(tmpPath))
                     {
                         Directory.CreateDirectory(tmpPath);
-                        _tempCompressionTargetFile = Path.Combine(tmpPath, Path.GetFileNameWithoutExtension(TargetFilename) + targetExtension);
+                        _tempCompressionTargetFile = Path.Combine(tmpPath, Path.GetFileNameWithoutExtension(SourceFilename) + targetExtension);
                     }
                 }
 
@@ -1426,12 +1443,6 @@ namespace FreeVideoFPSConverter
                         seconds += 0.01*long.Parse(message.Substring(posTime + 9, 2));
 
                         var percentage = seconds*100.0/OriginalDuration;
-
-                        if (percentage > 99.4)
-                        {
-                            percentage = 100.0;
-                        }
-
                         UpdateProgress(percentage);
                     }
                     catch (Exception)
@@ -1686,13 +1697,20 @@ namespace FreeVideoFPSConverter
         {
             try
             {
+                bool overwriteFile = _cmdLineOpts.BatchMode && _cmdLineOpts.Overwrite;
+                if (overwriteFile && File.Exists(TargetFilename))
+                {
+                    DeleteFileOrFolder(TargetFilename);
+                }
+
                 using (var zipFile = new ZipFile(TargetFilename))
                 {
                     zipFile.CompressionMethod = CompressionMethod.None;
                     zipFile.CompressionLevel = CompressionLevel.None;
+                    zipFile.Comment = "Video content package";
 
                     var tmpFiles = Directory.EnumerateFiles(folderPath, searchPattern + "*");
-                    zipFile.AddFiles(tmpFiles, false, "");
+                    zipFile.UpdateFiles(tmpFiles, "");
                     zipFile.Save();
                 }
 
@@ -1856,6 +1874,32 @@ namespace FreeVideoFPSConverter
             {
                 AddToLog("Error: Cannot patch target file " + TargetFilename + "!");
             }
+        }
+
+        /// <summary>
+        /// Checks if a package contains file a specific entry.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <param name="entry">The entry to check.</param>
+        private bool PackageContainsFile(string filename, string entry)
+        {
+            bool contains = false;
+            try
+            {
+                if(File.Exists(filename))
+                {
+                    using (ZipFile zip = new ZipFile(filename))
+                    {
+                        contains = zip.ContainsEntry(entry);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+
+            return contains;
         }
 
         private struct Command2Execute
