@@ -895,14 +895,14 @@ namespace FreeVideoFPSConverter
                 }
                 else
                 {
-                    bool isCompressedFile = ZipFile.IsZipFile(TargetFilename);
+                    var isCompressedFile = ZipFile.IsZipFile(TargetFilename);
                     if (isCompressedFile)
                     {
-                        string videoFileName = Path.GetFileName(SourceFilename);
+                        var videoFileName = Path.GetFileName(SourceFilename);
                         result = MessageBox.Show($"Do you want to add the video '{videoFileName}' to the container file {TargetFilename}?", "Target File already exists", MessageBoxButton.YesNo);
                         if (result == MessageBoxResult.Yes)
                         {
-                            bool alreadyExists = PackageContainsFile(TargetFilename, videoFileName);
+                            var alreadyExists = PackageContainsFile(TargetFilename, videoFileName);
                             if (alreadyExists)
                             {
                                 result = MessageBox.Show($"The container {TargetFilename} already contains a video with the name '{videoFileName}'\n\nDo you want to overwrite {videoFileName} in the container?", "File already exists", MessageBoxButton.YesNo);
@@ -1281,22 +1281,29 @@ namespace FreeVideoFPSConverter
             if (!_conversionCanceled)
             {
                 var videoFilename = string.IsNullOrEmpty(_tempCompressionTargetFile) ? TargetFilename : _tempCompressionTargetFile;
-                if (CreateXmlDescriptionFile(videoFilename))
+                if(File.Exists(videoFilename))
                 {
-                    if (CreateXmlFrameInfoFile(videoFilename))
+                    if (CreateXmlDescriptionFile(videoFilename))
                     {
-                        var completed = true;
-                        if (!string.IsNullOrEmpty(_tempCompressionTargetFile))
+                        if (CreateXmlFrameInfoFile(videoFilename))
                         {
-                            completed = CreatePackedVideoFile(Path.GetDirectoryName(videoFilename), Path.GetFileName(videoFilename));
-                        }
+                            var completed = true;
+                            if (!string.IsNullOrEmpty(_tempCompressionTargetFile))
+                            {
+                                completed = CreatePackedVideoFile(Path.GetDirectoryName(videoFilename), Path.GetFileName(videoFilename));
+                            }
 
-                        if (completed)
-                        {
-                            UpdateProgress(100);
-                            AddToLog("Conversion done!");
+                            if (completed)
+                            {
+                                UpdateProgress(100);
+                                AddToLog("Conversion done!");
+                            }
                         }
                     }
+                }
+                else
+                {
+                    AddToLog("Error: Conversion failed.");
                 }
 
                 CleanUp();
@@ -1539,7 +1546,6 @@ namespace FreeVideoFPSConverter
             if (!string.IsNullOrEmpty(path) && (fileExists || folderExists))
             {
                 for (var i = 0; i < 10; i++)
-                {
                     try
                     {
                         AddToLog("Trying to delete: " + path);
@@ -1565,7 +1571,6 @@ namespace FreeVideoFPSConverter
 
                         Thread.Sleep(1000);
                     }
-                }
             }
         }
 
@@ -1697,7 +1702,7 @@ namespace FreeVideoFPSConverter
         {
             try
             {
-                bool overwriteFile = _cmdLineOpts.BatchMode && _cmdLineOpts.Overwrite;
+                var overwriteFile = _cmdLineOpts.BatchMode && _cmdLineOpts.Overwrite;
                 if (overwriteFile && File.Exists(TargetFilename))
                 {
                     DeleteFileOrFolder(TargetFilename);
@@ -1883,12 +1888,12 @@ namespace FreeVideoFPSConverter
         /// <param name="entry">The entry to check.</param>
         private bool PackageContainsFile(string filename, string entry)
         {
-            bool contains = false;
+            var contains = false;
             try
             {
                 if(File.Exists(filename))
                 {
-                    using (ZipFile zip = new ZipFile(filename))
+                    using (var zip = new ZipFile(filename))
                     {
                         contains = zip.ContainsEntry(entry);
                     }

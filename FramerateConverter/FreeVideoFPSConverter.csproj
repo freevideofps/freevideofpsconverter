@@ -135,7 +135,6 @@
     <AppDesigner Include="Properties\" />
     <EmbeddedResource Include="Templates\FpsConversionInput.avs.template" />
     <EmbeddedResource Include="Templates\Usage.rtf" />
-    <Resource Include="FpsConversionInput.avs.template" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

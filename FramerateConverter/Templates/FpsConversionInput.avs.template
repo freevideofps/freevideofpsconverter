@@ -7,7 +7,7 @@ LoadPlugin("plugins/svpflow1.dll")
 LoadPlugin("plugins/svpflow2.dll")
 LoadPlugin("plugins/ffms2.dll")
 
-FFVideoSource(source_file).ConvertToYV12()
+FFVideoSource(source_file, utf8 = true).ConvertToYV12()
 
 global crop_params=""
 global resize_string=""
