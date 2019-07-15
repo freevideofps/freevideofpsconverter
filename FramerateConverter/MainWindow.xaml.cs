@@ -233,7 +233,7 @@ namespace FreeVideoFPSConverter
 
 #if DEBUG
             SourceFilename = @"C:\tmp\input.avi";
-            TargetFilename = @"C:\tmp\output.zip";
+            TargetFilename = @"C:\tmp\output.h264";
 #else
             SourceFilename = string.Empty;
             TargetFilename = string.Empty;
@@ -1901,7 +1901,7 @@ namespace FreeVideoFPSConverter
             }
             catch (Exception)
             {
-
+                // ignored
             }
 
             return contains;

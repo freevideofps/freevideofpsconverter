@@ -4,7 +4,7 @@
 #define MyAppName "Free Video FPS Converter"
 #define MyAppVersion "0.0.9.7"
 #define MyAppVersionDword "$00000907"
-#define MyAppPublisher "FreeVideoFPSConverter@gmail.com"
+#define MyAppPublisher "FreeVideoFPS"
 #define MyAppExeName "FreeVideoFPSConverter.exe"
 
 [Setup]
@@ -24,6 +24,7 @@ OutputBaseFilename=setupFreeVideoFPSConverter
 SetupIconFile=.\FramerateConverter\Images\app.ico
 Compression=lzma
 SolidCompression=yes
+UninstallDisplayIcon={app}\{#MyAppExeName},0
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -55,3 +56,6 @@ Root: "HKCU"; Subkey: "Software\FreeVideoFPSConverter"; ValueType: dword; ValueN
 [Dirs]
 Name: "{app}\Licenses"
 Name: "{app}\plugins"
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}"
