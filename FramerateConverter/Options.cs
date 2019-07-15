@@ -54,7 +54,7 @@ namespace FreeVideoFPSConverter
         [Option('H', "force-height", Required = false, HelpText = "Enforces target height.")]
         public int ForceHeight{ get; set; }
 
-        [Option('B', "bitrate", Required = false, HelpText = "target bit rate in KBits.")]
+        [Option('r', "bitrate", Required = false, HelpText = "Target bit rate in KBits/sec.")]
         public int BitrateKBits { get; set; }
 
     }
