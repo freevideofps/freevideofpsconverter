@@ -113,9 +113,9 @@ namespace FreeVideoFPSConverter
         private const string ExecutableFFmpegParametersMuxVideoAndAudio = @" -y -i ""{0}"" -i ""{1}"" -c copy ""{2}""";
 
         /// <summary>
-        ///     The media filter
+        /// File dialog filter
         /// </summary>
-        private const string MediaFilter = @"Video Files|*.mpg;*.avi;*.wmv;*.mov;*.mp4;*.h264;*.mkv;*.ivf;*.webm|All Files|*.*";
+        private static readonly string MediaFilter = $"Video Files|*.mpg;*.avi;*.wmv;*.mov;*.mp4;*.h264;*.mkv;*.ivf;*.webm|Media Package|*.{CompressedFileExtension.TrimStart('.')}|All Files|*.*";
 
         /// <summary>
         ///     The bit rate property
@@ -1758,7 +1758,7 @@ namespace FreeVideoFPSConverter
                     Application.Current.Shutdown((int) ErrorCodes.TargetFileCorrupt);
                 }
 
-                return true;
+                return false;
             }
 
             var rgx = new Regex("frames\\.frame\\.\\d+\\.pkt_size=\"(\\d+)\"");
