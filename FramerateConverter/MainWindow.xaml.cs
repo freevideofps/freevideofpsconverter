@@ -30,7 +30,7 @@ namespace FreeVideoFPSConverter
         /// <summary>
         /// The file extension used for compressed container format
         /// </summary>
-        private const string CompressedFileExtension = ".zip";
+        private const string CompressedFileExtension = ".mpkg";
 
         /// <summary>
         ///     The executable FFprobe.exe
@@ -442,7 +442,6 @@ namespace FreeVideoFPSConverter
         {
             _cmdLineOpts = options;
 
-
             if (!string.IsNullOrEmpty(_cmdLineOpts.SourceFile))
             {
                 SourceFilename = _cmdLineOpts.SourceFile;
@@ -522,6 +521,10 @@ namespace FreeVideoFPSConverter
                 TextBoxForcedHeight.IsEnabled = false;
                 ButtonConvert.IsEnabled = false;
                 ButtonAbout.IsEnabled = false;
+                SpinnerBitRate.IsEnabled = false;
+                CheckBoxNoFLicker.IsEnabled = false;
+                CheckBoxMinimum.IsEnabled = false;
+                CheckKeepAudio.IsEnabled = false;
 
                 Application.Current.Dispatcher.BeginInvoke(
                     (Action)(() => ButtonConvert_Click(ButtonConvert, null)));
@@ -1241,6 +1244,10 @@ namespace FreeVideoFPSConverter
             TextBoxForcedHeight.IsEnabled = false;
             ButtonConvert.IsEnabled = false;
             ButtonAbout.IsEnabled = false;
+            SpinnerBitRate.IsEnabled = false;
+            CheckBoxNoFLicker.IsEnabled = false;
+            CheckBoxMinimum.IsEnabled = false;
+            CheckKeepAudio.IsEnabled = false;
 
             foreach (var command2Execute in commands2Execute)
             {
@@ -1325,6 +1332,10 @@ namespace FreeVideoFPSConverter
             TextBoxForcedHeight.IsEnabled = true;
             ButtonConvert.IsEnabled = true;
             ButtonAbout.IsEnabled = true;
+            SpinnerBitRate.IsEnabled = true;
+            CheckBoxNoFLicker.IsEnabled = true;
+            CheckBoxMinimum.IsEnabled = true;
+            CheckKeepAudio.IsEnabled = true;
         }
 
         /// <summary>
@@ -1647,7 +1658,7 @@ namespace FreeVideoFPSConverter
 
             _conversionCanceled = true;
 
-            if (_cmdLineOpts.BatchMode)
+            if (_cmdLineOpts != null && _cmdLineOpts.BatchMode)
             {
                 Application.Current.Shutdown((int) ErrorCodes.Canceled);
             }

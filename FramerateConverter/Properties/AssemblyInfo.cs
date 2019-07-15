@@ -14,9 +14,9 @@ using System.Windows;
 [assembly: AssemblyTitle("FreeVideoFPSConverter")]
 [assembly: AssemblyDescription("Free Frontend GUI for svp project")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("FreeVideoFPSConverter@gmail.com")]
+[assembly: AssemblyCompany("FreeVideoFPSConverter")]
 [assembly: AssemblyProduct("FreeVideoFPSConverter")]
-[assembly: AssemblyCopyright("Copyright © FreeVideoFPSConverter@gmail.com")]
+[assembly: AssemblyCopyright("Copyright © FreeVideoFPSConverter")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
