@@ -19,7 +19,7 @@ AppPublisher={#MyAppPublisher}
 DefaultDirName={commonpf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 LicenseFile=.\FramerateConverter\Templates\GPLv2.txt
-OutputDir=.\FramerateConverter\master
+OutputDir=.\
 OutputBaseFilename=setupFreeVideoFPSConverter
 SetupIconFile=.\FramerateConverter\Images\app.ico
 Compression=lzma
@@ -37,6 +37,7 @@ Source: ".\FramerateConverter\bin\Release\FreeVideoFPSConverter.exe"; DestDir: "
 Source: ".\FramerateConverter\bin\Release\FreeVideoFPSConverter.exe.config"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\FramerateConverter\bin\Release\CommandLine.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\FramerateConverter\bin\Release\Xceed.Wpf.Toolkit.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\FramerateConverter\bin\Release\DotNetZip.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\FramerateConverter\bin\Release\tools\*.*"; DestDir: "{app}\tools"; Flags: ignoreversion
 Source: ".\FramerateConverter\bin\Release\tools\plugins\*.dll"; DestDir: "{app}\tools\plugins"; Flags: ignoreversion
 Source: ".\FramerateConverter\bin\Release\tools\Licenses\*.*"; DestDir: "{app}\Licenses"; Flags: ignoreversion
