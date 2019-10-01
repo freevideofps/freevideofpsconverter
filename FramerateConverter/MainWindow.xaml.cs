@@ -550,7 +550,7 @@ namespace FreeVideoFPSConverter
         {
             var openFileDialog = new OpenFileDialog
             {
-                Title = "Select video file..",
+                Title = "Select video file...",
                 InitialDirectory = !string.IsNullOrEmpty(LastSourceDirectory) ? LastSourceDirectory : AppDomain.CurrentDomain.BaseDirectory,
                 DefaultExt = ".avi",
                 Filter = MediaFilter
@@ -573,7 +573,7 @@ namespace FreeVideoFPSConverter
         /// <param name="e">The <see cref="RoutedEventArgs" /> instance containing the event data.</param>
         private void ButtonBrowseTarget_Click(object sender, RoutedEventArgs e)
         {
-            var saveFileDialog = new SaveFileDialog {Title = "Select video file.."};
+            var saveFileDialog = new SaveFileDialog {Title = "Select video file..."};
 
             if (!string.IsNullOrEmpty(LastTargetDirectory))
             {
@@ -1285,6 +1285,7 @@ namespace FreeVideoFPSConverter
                 }
             }
 
+            ErrorCodes result = ErrorCodes.Ok;
             if (!_conversionCanceled)
             {
                 var videoFilename = string.IsNullOrEmpty(_tempCompressionTargetFile) ? TargetFilename : _tempCompressionTargetFile;
@@ -1310,6 +1311,7 @@ namespace FreeVideoFPSConverter
                 }
                 else
                 {
+                    result = ErrorCodes.Unknown;
                     AddToLog("Error: Conversion failed.");
                 }
 
@@ -1317,7 +1319,7 @@ namespace FreeVideoFPSConverter
 
                 if (_cmdLineOpts.BatchMode && Application.Current != null)
                 {
-                    Application.Current.Shutdown((int)ErrorCodes.Ok);
+                    Application.Current.Shutdown((int)result);
                 }
             }
 
